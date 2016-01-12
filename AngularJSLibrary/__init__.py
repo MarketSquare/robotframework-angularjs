@@ -22,21 +22,51 @@ var rootSelector=null;function byRepeaterInner(b){var a="by."+(b?"exactR":"r")+"
 arg0="/\\/g,\"\""
 arg1="ng\\:"
 
+
+class ngElementFinder(ElementFinder):
+    def _find_by_default(self, browser, criteria, tag, constraints):
+        if criteria.startswith('//'):
+            return self._s2l._element_finder._find_by_xpath(browser, criteria, tag, constraints)
+        elif criteria.startswith('{{'):
+            return self._find_by_binding(browser, criteria, tag, constraints)
+        return self._find_by_key_attrs(browser, criteria, tag, constraints)
+
+    def _find_by_binding(self, browser, criteria, tag, constraints):
+        return browser.execute_script("""
+            var binding = '%s';
+            var bindings = document.getElementsByClassName('ng-binding');
+            var matches = [];
+
+            for (var i = 0; i < bindings.length; ++i) {
+                var dataBinding = angular.element(bindings[i]).data('$binding');
+
+                if(dataBinding) {
+                    var bindingName = dataBinding.exp || dataBinding[0].exp || dataBinding;
+
+                    if (bindingName.indexOf(binding) != -1) {
+                        matches.push(bindings[i]);
+                    }
+                }
+            }
+            return matches;
+        """ % criteria)
+
 class AngularJSLibrary:
 
     ROBOT_LIBRARY_SCOPE = 'GLOBAL'
     ROBOT_LIBRARY_VERSION = '0.0.1'
 
-    _s2l = BuiltIn().get_library_instance('Selenium2Library')
-
     def __init__(self):
+        # Override defaut locators to include binding {{ }}
+        self._s2l._element_finder = ngElementFinder()
+
+        # Add Angular specific locator strategies
         self._s2l.add_location_strategy('ng-binding', self._find_by_binding, persist=True)
         self._s2l.add_location_strategy('binding', self._find_by_binding, persist=True)
         self._s2l.add_location_strategy('ng-model', self._find_by_model, persist=True)
         self._s2l.add_location_strategy('model', self._find_by_model, persist=True)
         self._s2l.add_location_strategy('ng-repeater', self._find_by_ng_repeater, persist=True)
         self._s2l.add_location_strategy('repeater', self._find_by_ng_repeater, persist=True)
-
 
     def wait_for_angular(self, timeout=None, error=None):
 
@@ -177,3 +207,7 @@ class AngularJSLibrary:
         #js_locator = js_locator + """.getElements()"""
 
         return js_locator
+
+    @property
+    def _s2l(self):
+        return BuiltIn().get_library_instance('Selenium2Library')
