@@ -106,12 +106,13 @@ class AngularJSLibrary:
         """ % criteria)
 
     def _find_by_model(self, browser, criteria, tag, constraints):
-        prefixes = ['ng-', 'ng_', 'data-ng-', 'x-ng-', 'ng\\:']
+        prefixes = ['ng-', 'ng_', 'data-ng-', 'x-ng-']#, 'ng\\:']
         for prefix in prefixes:
             selector = '[%smodel="%s"]' % (prefix, criteria)
             elements = browser.execute_script("""return document.querySelectorAll('%s');""" % selector);
             if len(elements):
                 return ElementFinder()._filter_elements(elements, tag, constraints)
+        raise ValueError("Element locator '" + criteria + "' did not match any elements.")
 
     def _find_by_ng_repeater(self, browser, criteria, tag, constraints):
         repeater_row_col = self._parse_ng_repeat_locator(criteria)
@@ -125,6 +126,9 @@ class AngularJSLibrary:
         );
         if len(elements):
             return ElementFinder()._filter_elements(elements, tag, constraints)
+        else:
+            raise ValueError("Element locator '" + criteria + "' did not match any elements.")
+
 
     # Helper Methods
 
