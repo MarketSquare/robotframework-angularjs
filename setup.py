@@ -26,6 +26,7 @@ setup(
     license='Apache License 2.0',
     classifiers=[
         'Development Status :: 3 - Alpha',
+        'Framework :: Robot Framework',
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
