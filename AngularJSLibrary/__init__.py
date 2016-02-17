@@ -58,7 +58,7 @@ class ngElementFinder(ElementFinder):
 class AngularJSLibrary:
 
     ROBOT_LIBRARY_SCOPE = 'GLOBAL'
-    ROBOT_LIBRARY_VERSION = '0.0.2'
+    ROBOT_LIBRARY_VERSION = '0.0.3.dev1'
 
     def __init__(self):
         # Override defaut locators to include binding {{ }}
