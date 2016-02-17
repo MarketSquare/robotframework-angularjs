@@ -11,12 +11,14 @@ Installation
 To install **AngularJSLibrary**, run:
 
 .. code:: bash
+
     pip install robotframework-angularjs
 
 
 Alternatively, to install from source:
 
 .. code:: bash
+
     python setup.py install
 
     
@@ -40,6 +42,7 @@ In order to use the keywords you have to include AngularJSLibrary in the setting
 The new locator strategies include
 
 .. code::
+
     binding=
     model=
     repeater=
@@ -48,26 +51,31 @@ The new locator strategies include
 For example, you can look for an Angular ng-binding using
 
 .. code::  robotframework
+
     Get Text  binding={{greeting}}
 
 
 or by using partial match
 
 .. code::  robotframework
+
     Get Text  binding=greet
 
 
 or by simply using the binding {{…}} notation
 
 .. code::  robotframework
+
     Get Text  {{greeting}}
 
 
 One can also find elements  by model
 
 .. code::  robotframework
+
     Input Text  model=aboutbox  Something else to write about
 
+    
 .. role:: rf(code)
    :language robotframework
 
