@@ -51,6 +51,10 @@ class ngElementFinder(ElementFinder):
             return matches;
         """ % criteria)
 
+    @property
+    def _s2l(self):
+        return BuiltIn().get_library_instance('Selenium2Library')
+
 class AngularJSLibrary:
 
     ROBOT_LIBRARY_SCOPE = 'GLOBAL'
