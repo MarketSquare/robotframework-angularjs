@@ -77,7 +77,7 @@ One can also find elements  by model
 
     
 .. role:: rf(code)
-   :language robotframework
+   :language: robotframework
 
 Finally there is the strategy of find by repeat. This takes the general form of :rf:`repeater=some ngRepeat directive@row[n]@column={{ngBinding}}`. Here we specify the directive as well as the row, an zero-based index, and the column, an ngBinding. Using this full format will return, if exists the element matching the directive, row and column binding.  One does not need to specify the row and column but can specify either both, one or the other or neither. In such cases the locator may return  list  of elements or even a list of list of elements. Also the ordering of row and column does not matter; using :rf:`repeater=baz in days@row[0]@column=b` is the same as :rf:`repeater=baz in days@column=b @row[0]`.
 
@@ -87,3 +87,7 @@ If you need help with AngularJSLibrary, Selenium2Library, or Robot Framework usa
 
 References
 ----------
+
+`Selenium2Library <https://github.com/robotframework/Selenium2Library>`_: Web testing library for Robot Framework
+
+`Protractor <http://www.protractortest.org>`_: E2E test framework for Angular apps
