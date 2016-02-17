@@ -11,17 +11,32 @@ Installation
 To install **AngularJSLibrary**, run:
 
 .. code:: bash
-pip install robotframework-angularjs
+    pip install robotframework-angularjs
 
 
 Alternatively, to install from source:
 
 .. code:: bash
-python setup.py install
+    python setup.py install
 
+    
 
 Keyword Usage
 -------------
+In order to use the keywords you have to include AngularJSLibrary in the settings section of your test.
+
+.. code::  robotframework
+
+    *** Settings ***
+    Library         AngularJSLibrary
+    ...
+    
+    *** Test Cases ***
+    Go To  localhost:8080
+    Wait for Angular
+    ...
+
+
 The new locator strategies include
 
 .. code::
