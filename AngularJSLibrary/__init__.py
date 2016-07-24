@@ -22,12 +22,27 @@ var rootSelector=null;function byRepeaterInner(b){var a="by."+(b?"exactR":"r")+"
 arg0="/\\/g,\"\""
 arg1="ng\\:"
 
+def stripcurly(binding):
+    """ Starting with AngularJS 1.3 the interpolation brackets are not allowed
+    in the binding description string. As such the AngularJSLibrary strips them
+    out before calling the _find_by_binding method.
+
+    See http://www.protractortest.org/#/api?view=ProtractorBy.prototype.binding
+    """
+    if binding.startswith('{{'):
+        binding = binding[2:]
+
+    if binding.endswith('}}'):
+        binding = binding[:-2]
+
+    return binding
 
 class ngElementFinder(ElementFinder):
     def _find_by_default(self, browser, criteria, tag, constraints):
         if criteria.startswith('//'):
             return self._s2l._element_finder._find_by_xpath(browser, criteria, tag, constraints)
         elif criteria.startswith('{{'):
+            criteria = stripcurly(criteria)
             return self._find_by_binding(browser, criteria, tag, constraints)
         return self._find_by_key_attrs(browser, criteria, tag, constraints)
 
