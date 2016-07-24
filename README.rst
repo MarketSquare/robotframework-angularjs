@@ -85,6 +85,10 @@ Getting Help
 ------------
 If you need help with AngularJSLibrary, Selenium2Library, or Robot Framework usage, please post to the `user group for Robot Framework <https://groups.google.com/forum/#!forum/robotframework-users>`_.
 
+Testing
+-------
+For information on how we test the AngularJSLibrary see the `Testing.rst`_ file.
+
 References
 ----------
 
