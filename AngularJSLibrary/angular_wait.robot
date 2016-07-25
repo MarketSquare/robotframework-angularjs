@@ -1,6 +1,7 @@
 *** Settings ***
-Test Setup      Go To   http://${SERVER}/testapp/#/async
-Resource        ../resource.txt
+Test Setup      Go To   http://${SERVER}/testapp/ng1/alt_root_index.html#/async
+Library         AngularJSLIbrary
+Resource        ../resource.robot
 
 *** Test Cases ***
 Waits For Http Calls

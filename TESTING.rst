@@ -40,23 +40,23 @@ Modifying the test server of Selenium2Library, rf-s2l\test\resources\testserver\
 
         Added by Edward Manlove - June 5, 2014
         """
-        if self.path=='/fastcall':
+        if self.path.endswith('/fastcall'):
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
             self.wfile.write('done')
-        elif self.path=='/slowcall':
+        elif self.path.endswith('/slowcall'):
             sleep(2)
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
             self.wfile.write('finally done')
-        elif self.path=='/fastTemplateUrl':
+        elif self.path.endswith('/fastTemplateUrl'):
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
             self.wfile.write('fast template contents')
-        elif self.path=='/slowTemplateUrl':
+        elif self.path.endswith('/slowTemplateUrl'):
             sleep(2)
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
@@ -92,21 +92,22 @@ rf-s2l/test/resources/testserver/testserver.py
     A modified version of the test server containing the additional do_GET() method.
 
 rf-s2l/test/acceptance/locators/angular.robot
+    AngularJSLibrary acceptance tests testing locators.
+
 rf-s2l/test/acceptance/keywords/angular_wait.robot
-    AngularJSLibrary acceptance tests.
+    AngularJSLibrary acceptance tests testing wait for angular functionality.
     
 And if we activate our virtual Python instance we should see
 
-# pip list  # ~/rf-ng/empty-python27-env/
-You are using pip version 6.0.3, however version 8.1.2 is available.
-You should consider upgrading via the 'pip install --upgrade pip' command.
-decorator (4.0.4)
-docutils (0.12)
-pip (6.0.3)
-robotframework (2.8.7)
-selenium (2.48.0)
-setuptools (8.2.1)
-
+.. code:: bash
+	  
+    # pip list
+    decorator (4.0.10)
+    docutils (0.12)
+    pip (8.1.2)
+    robotframework (3.0)
+    selenium (2.53.6)
+    setuptools (8.2.1)
 
 Starting the modified testserver
 --------------------------------
