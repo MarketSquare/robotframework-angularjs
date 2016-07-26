@@ -152,3 +152,99 @@ Note there is currently an issue with the Selenium2Library test runner script wh
 .. code:: bash
 
     rebot -d test/results/ test/results/output.xml
+
+Understanding how AngularJSLibrary works
+----------------------------------------
+
+It is important to understand what is going on in the underlying library and there are many reasons for that. For one as I continue to develop this library I realize some assumptions and thus implementations are simply wrong. I also have very narrow focus as my daily work focuses on a single (and usually older) version of AngularJS. So there could be issues I am not seeing and thus not addressing. These and many more reasons support the argument thats as a library user we should all be well informed as to how the library works and what is Protractor / AngularJS doing in the functions we are mimicing.
+
+Let's start off by examining the waitForAngular functionality in Protractor. At the core is this function (with some code removed) in ptor/lib/clientsidescripts.js
+
+.. code :: javascript
+
+    /**
+     * Wait until Angular has finished rendering and has
+     * no outstanding $http calls before continuing. The specific Angular app
+     * is determined by the rootSelector.
+     *
+     * Asynchronous.
+     *
+     * @param {string} rootSelector The selector housing an ng-app
+     * @param {function(string)} callback callback. If a failure occurs, it will
+     *     be passed as a parameter.
+     */
+    functions.waitForAngular = function(rootSelector, callback) {
+      var el = document.querySelector(rootSelector);
+    
+      try {
+        /* [SNIP] Newer vesions (which ones? not sure) there is a function for waiting. This
+	one is off the window object. For now we will ignore this method and look at the original
+	method for waiting...
+	*/
+	/* [SNIP] Check to make sure we're on an angular page. */
+        if (angular.getTestability) {
+          /* [SNIP] Another function for waiting that comes from angular's testability api. */
+        } else {
+	  /* Another check to verify we are within the ng-app. */
+
+          angular.element(el).injector().get('$browser').
+              notifyWhenNoOutstandingRequests(callback);
+	      
+        }
+      } catch (err) {
+        callback(err.message);
+      }
+    };
+
+So striping out a lot of the code (see [SNIP]s above), the core is simply this
+
+.. code :: javascript
+
+    angular.element(el).injector().get('$browser').
+        notifyWhenNoOutstandingRequests(callback);
+
+a method which sounds like will give notification when there are no more outstanding requests or angular "actions". But what does callback do? What exactly does this method look like and how does one thus use it information? To answer what this looks like in practice we can use the testapp above. Start up the test server
+
+.. code::  bash
+
+    cd ng
+
+    source clean-python27-env/bin/activate
+    
+    cd rf-s2l
+    
+    python test/resources/testserver/testserver.py start
+
+In a browser navigate to
+
+.. code::
+   
+   http://localhost:7000/testapp/ng1/alt_root_index.html#/async
+
+[You'll see here I am using the angular1 portion of testapp. Also I am using the alt_root_index so I can hardode which version of Angular1.x I'll want.] With the site running open the developers tools (F12) and in the console editor paste the following code, but before you run it let's tear it apart.
+
+..code::  javascript
+
+    var callback = function () {console.log('*')}
+    var el = document.querySelector('#nested-ng-app');
+    var h = setInterval(function w4ng() {
+        console.log('.');
+        try {
+            angular.element(el).injector().get('$browser').
+                notifyWhenNoOutstandingRequests(callback);      
+        } catch (err) {
+          console.log(err.message);
+          callback(err.message);
+        }
+      }, 10);
+
+You should see it is basically a call to setInterval which will continually call the function with a 10 ms delay each time till the interval is cleared. The function it is calling basically outputs a dot, '.', and calls the notifyWhenNoOutstandingRequests function from the waitForAngular passing along the callback. That callback will print out a star, '*', to the console. Want to take a guess as to what will happen when you run this code?
+
+You will see a continual series of dots then stars printed to the console. Now on the async test page click the button label $timeout. Only dots are printed to the console for some time. Then only stars. What is happening at this time? When only the dots are outputed we are waiting for angular. And when just the stars are print, its all those callbacks returning while we were waiting for angular to complete. God ahead and some of the other asyncrouous actions on the async page and see what the output is.
+
+Note when you want to stop the output type the following line into the console to stop the continious interval call.
+
+..code::  javascript
+
+    clearInterval(h);
+
