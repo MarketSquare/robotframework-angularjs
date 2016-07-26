@@ -223,7 +223,7 @@ In a browser navigate to
 
 [You'll see here I am using the angular1 portion of testapp. Also I am using the alt_root_index so I can hardode which version of Angular1.x I'll want.] With the site running open the developers tools (F12) and in the console editor paste the following code, but before you run it let's tear it apart.
 
-..code::  javascript
+.. code ::  javascript
 
     var callback = function () {console.log('*')}
     var el = document.querySelector('#nested-ng-app');
@@ -244,7 +244,7 @@ You will see a continual series of dots then stars printed to the console. Now o
 
 Note when you want to stop the output type the following line into the console to stop the continious interval call.
 
-..code::  javascript
+.. code ::  javascript
 
     clearInterval(h);
 
