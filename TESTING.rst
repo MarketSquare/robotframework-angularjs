@@ -248,3 +248,42 @@ Note when you want to stop the output type the following line into the console t
 
     clearInterval(h);
 
+So we can visualize the waiting for angular within javascript and from within the browser. We want, though, to not be in javascript (otherise we would just use Protrator and WebDriverJS) but in python.  So let's do something similar with a simple python unittest.
+
+.. code ::  python
+
+    import unittest
+    from selenium import webdriver
+    
+    js_waiting_var="""
+        var waiting = true;
+        var callback = function () {waiting = false;}
+        var el = document.querySelector('#nested-ng-app');
+        angular.element(el).injector().get('$browser').
+                    notifyWhenNoOutstandingRequests(callback);      
+        return waiting;
+    """
+    
+    
+    class ExecuteWaitForAngularTestCase(unittest.TestCase):
+    
+        def setUp(self):
+            self.driver = webdriver.Firefox()
+    
+        def test_exe_javascript(self):
+            driver = self.driver
+            driver.get("http://localhost:7000/testapp/ng1/alt_root_index.html#/async")
+	    try:
+	        while (True):
+                    waiting = driver.execute_script(js_waiting_var)
+                    print('%s' % waiting)
+	    except KeyboardInterrupt:
+	        pass
+    
+        def tearDown(self):
+            self.driver.close()
+    
+    if __name__ == "__main__":
+        unittest.main()
+
+I went through a couple interations before settling on the above. Let me go through the syncronous javascript script. First, I like the simplicity of it. One iteration had a couple of calls to notifyWhenNoOutstandingRequests()
