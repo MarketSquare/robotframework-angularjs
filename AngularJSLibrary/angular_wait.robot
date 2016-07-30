@@ -75,3 +75,19 @@ Waits For Slow Ng-Include Templates To Load
 
     Wait For Angular  timeout=30sec
     Element Text Should Be  css=.included  slow template contents
+
+Wait Times Out
+    Wait For Angular
+    Element Text Should Be  binding=slowAngularTimeoutStatus  not started
+
+    Click Button  css=[ng-click="slowAngularTimeout()"]
+
+    Run Keyword And Expect Error  *  Wait For Angular  timeout=1sec
+
+Log Pending Http Calls
+    Wait For Angular
+    Element Text Should Be  binding=slowHttpPromiseStatus  not started
+
+    Click Button  css=[ng-click="slowHttpPromise()"]
+
+    Run Keyword And Expect Error  *  Wait For Angular  timeout=1sec
