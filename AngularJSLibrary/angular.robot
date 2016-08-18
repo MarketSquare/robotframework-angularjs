@@ -1,10 +1,10 @@
 *** Settings ***
 Test Setup        Start Angular Test
 Resource          ../resource.robot
+Library           AngularJSLibrary
 
 *** Test Cases ***
 Should Find An Element By Binding
-    #${text} =  Get Text  binding=greeting
     ${text} =  Get Text  {{greeting}}
     Should Be Equal  '${text}'  'Hiya'
 
@@ -30,9 +30,10 @@ Should Find An Element By Text Input Model
     Should Be Equal  '${text}'  'Jane Doe'
     
 Should Find An Element By Checkbox Input Model
-    Element Should Be Visible  model=show
+    Element Should Be Visible  id=shower
     Click Element  model=show
-    Element Should Not Be Visible  model=show
+    Wait For Angular
+    Element Should Not Be Visible  id=shower
 
 Should Find A Textarea By Model
    ${value} =  Get Element Attribute  model=aboutbox@value
@@ -186,9 +187,8 @@ Should Return All Elements When Unmodified
 
 *** Keywords ***
 Start Angular Test
-    Wait For Angular
     Go To   http://${SERVER}/testapp/ng1/alt_root_index.html#/form
-    Sleep  2s
+    Wait For Angular
 
 Start ng-repeat Test
     Go To   http://${SERVER}/testapp/ng1/alt_root_index.html#/repeater
