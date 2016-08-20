@@ -91,3 +91,17 @@ Log Pending Http Calls
     Click Button  css=[ng-click="slowHttpPromise()"]
 
     Run Keyword And Expect Error  *  Wait For Angular  timeout=1sec
+
+Implicit Wait For Angular On Timeout
+    Wait For Angular
+
+    Click Button  css=[ng-click="slowAngularTimeout()"]
+
+    Click Button  css=[ng-click="slowAngularTimeoutHideButton()"]
+
+Implicit Wait For Angular On Timeout With Promise
+    Wait For Angular
+
+    Click Button  css=[ng-click="slowAngularTimeoutPromise()"]
+
+    Click Button  css=[ng-click="slowAngularTimeoutPromiseHideButton()"]

@@ -64,6 +64,18 @@ def stripcurly(binding):
     return binding
 
 class ngElementFinder(ElementFinder):
+    def find(self, browser, locator, tag=None):
+        timeout = self._s2l.get_selenium_timeout()
+        timeout = timestr_to_secs(timeout)
+
+        try:
+            WebDriverWait(self._s2l._current_browser(), timeout, 0.2)\
+                .until_not(lambda x: self._s2l._current_browser().execute_script(js_waiting_var))
+        except TimeoutException:
+            pass
+        strategy = ElementFinder.find(self, browser, locator, tag=None)
+        return strategy
+
     def _find_by_default(self, browser, criteria, tag, constraints):
         if criteria.startswith('//'):
             return self._s2l._element_finder._find_by_xpath(browser, criteria, tag, constraints)
