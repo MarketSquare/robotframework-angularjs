@@ -63,16 +63,24 @@ def stripcurly(binding):
 
     return binding
 
+def is_boolean(item):
+    return isinstance(item,bool)
+
 class ngElementFinder(ElementFinder):
+    def __init__(self, ignore_implicit_angular_wait=False):
+        super(ngElementFinder, self).__init__()
+        self.ignore_implicit_angular_wait = ignore_implicit_angular_wait
+
     def find(self, browser, locator, tag=None):
         timeout = self._s2l.get_selenium_timeout()
         timeout = timestr_to_secs(timeout)
 
-        try:
-            WebDriverWait(self._s2l._current_browser(), timeout, 0.2)\
-                .until_not(lambda x: self._s2l._current_browser().execute_script(js_waiting_var))
-        except TimeoutException:
-            pass
+        if not self.ignore_implicit_angular_wait:
+            try:
+                WebDriverWait(self._s2l._current_browser(), timeout, 0.2)\
+                    .until_not(lambda x: self._s2l._current_browser().execute_script(js_waiting_var))
+            except TimeoutException:
+                pass
         strategy = ElementFinder.find(self, browser, locator, tag=None)
         return strategy
 
@@ -113,9 +121,31 @@ class AngularJSLibrary:
     ROBOT_LIBRARY_SCOPE = 'GLOBAL'
     ROBOT_LIBRARY_VERSION = '0.0.3.dev1'
 
-    def __init__(self):
-        # Override defaut locators to include binding {{ }}
-        self._s2l._element_finder = ngElementFinder()
+    def __init__(self,
+                 root_selector=None,
+                 implicit_angular_wait=30.0,
+                 ignore_implicit_angular_wait=False
+    ):
+        """AngularJSLibrary can be imported with optional arguments.
+
+        Not Yet Implemented - `root_selector` is the locator of the root angular object.
+
+        Not Yet Implemented - `implicit_angular_wait` is the implicit timeout that AngularJS library
+                             waits for angular to finish rendering and waits for any outstanding $http calls.
+
+        `ignore_implicit_angular_wait` is a flag which when set to True the AngularJS Library will not wait
+        for Angular $timeouts nor $http calls to complete when finding elements by locator. As noted in the
+        Protractor documentation "this should be used only when necessary, such as when a page continuously
+        polls an API using $timeout." The default value is False.
+
+        Examples:
+        | Library `|` AngularJSLibrary `|` ignore_implicit_angular_wait=${true}   | # Will not wait for angular syncronization
+
+        """
+
+        self.ignore_implicit_angular_wait = ignore_implicit_angular_wait
+        # Override default locators to include binding {{ }}
+        self._s2l._element_finder = ngElementFinder(ignore_implicit_angular_wait)
 
         # Add Angular specific locator strategies
         self._s2l.add_location_strategy('ng-binding', self._find_by_binding, persist=True)
@@ -126,7 +156,9 @@ class AngularJSLibrary:
         self._s2l.add_location_strategy('repeater', self._find_by_ng_repeater, persist=True)
 
         self.trackOutstandingTimeouts = True
-        
+
+    # Wait For Angular
+
     def wait_for_angular(self, timeout=None, error=None):
 
         # Determine timeout and error
@@ -145,6 +177,13 @@ class AngularJSLibrary:
             pendingHttps = self._exec_js(js_get_pending_http_requests)
             logger.debug(pendingHttps)
             raise TimeoutException(error)
+
+    def set_ignore_implicit_angular_wait(self, ignore):
+        if not is_boolean(ignore):
+            raise TypeError("Ignore must be boolean, got %s."
+                            % type_name(ignore))
+
+        self._s2l._element_finder.ignore_implicit_angular_wait = ignore
 
     # Locators
 
