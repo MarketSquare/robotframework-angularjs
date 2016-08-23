@@ -1,6 +1,18 @@
 Changelog
 =========
 
+0.0.4 (unreleased)
+------------------
+Changes:
+
+- Added implicit Wait on Angular when finding elements by locator.
+  [emanlove]
+
+- Added more documentation on testing the library and how the AngularJS
+  Library is implementing the implicit wait for angular functionality.
+  See TESTING.rst.
+  [emanlove]
+
 0.0.3 (2016-07-30)
 ------------------
 Fixes:
