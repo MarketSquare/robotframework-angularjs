@@ -91,3 +91,39 @@ Log Pending Http Calls
     Click Button  css=[ng-click="slowHttpPromise()"]
 
     Run Keyword And Expect Error  *  Wait For Angular  timeout=1sec
+
+Implicit Wait For Angular On Timeout
+    Wait For Angular
+
+    Click Button  css=[ng-click="slowAngularTimeout()"]
+
+    Click Button  css=[ng-click="slowAngularTimeoutHideButton()"]
+
+Implicit Wait For Angular On Timeout With Promise
+    Wait For Angular
+
+    Click Button  css=[ng-click="slowAngularTimeoutPromise()"]
+
+    Click Button  css=[ng-click="slowAngularTimeoutPromiseHideButton()"]
+
+Toggle Implicit Wait For Angular Flag
+    Element Should Not Be Visible  css=[ng-click="slowAngularTimeoutHideButton()"]
+
+    Set Ignore Implicit Angular Wait  ${true}
+
+    Click Button  css=[ng-click="slowAngularTimeout()"]
+
+    Run Keyword And Expect Error  *  Click Button  css=[ng-click="slowAngularTimeoutHideButton()"]
+
+    Wait For Angular
+    Element Should Be Visible  css=[ng-click="slowAngularTimeoutHideButton()"]
+    Click Element  css=[ng-click="slowAngularTimeoutHideButton()"]
+    Element Should Not Be Visible  css=[ng-click="slowAngularTimeoutHideButton()"]
+
+    Set Ignore Implicit Angular Wait  ${false}
+
+    Click Button  css=[ng-click="slowAngularTimeout()"]
+
+    Click Button  css=[ng-click="slowAngularTimeoutHideButton()"]
+
+    Element Should Not Be Visible  css=[ng-click="slowAngularTimeoutHideButton()"]

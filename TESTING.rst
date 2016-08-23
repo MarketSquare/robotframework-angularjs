@@ -31,6 +31,13 @@ We will also clone the protractor repository. From Protractor we will use their 
 	   git clone git@github.com:angular/protractor.git ptor
            cp -R ptor/testapp rf-s2l/test/resources/.
 
+I modified the async testapp page so that the implicit wait for angular functionality can be tested. The modified version of async.html and async.js can be moved over to the testapp directory under rf-s2l directory.
+
+.. code:: bash
+
+    cp rf-ng/AngularJSLibrary/async.html rf-s2l/test/resources/testapp/ng/async/.
+    cp rf-ng/AngularJSLibrary/async.js rf-s2l/test/resources/testapp/ng/async/
+
 Modifying the test server of Selenium2Library, rf-s2l\test\resources\testserver\testserver.py, add the following method, do_GET, to the StoppableHttpRequestHandler class.
 
 .. code:: python
@@ -65,6 +72,14 @@ Modifying the test server of Selenium2Library, rf-s2l\test\resources\testserver\
         else:
             SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
+Don't forget with the added sleep statements you need to include the time package
+
+.. code:: python
+
+    from time import sleep
+
+otherwise several tests will fail.
+
 Finally, let's move the test files over to the Selenium2Library test directory. Although this may not be necessary I do it to keep all the test files together. Ultimately I would like to see the Selenium2Library test directory moved into the src directory so the tests get distributed and then allow the test scripts for AngularJSLibrary be abe to be run from its own test directory. But for now we will combine them.
 
 .. code:: bash
@@ -96,7 +111,12 @@ rf-s2l/test/acceptance/locators/angular.robot
 
 rf-s2l/test/acceptance/keywords/angular_wait.robot
     AngularJSLibrary acceptance tests testing wait for angular functionality.
-    
+
+rf-s2l/test/resources/testapp/ng/async/async.html
+rf-s2l/test/resources/testapp/ng/async/async.js
+    A modified version of the async testapp page containing buttons which appear after the
+    angular $timeouts and $http requests are completed.
+
 And if we activate our virtual Python instance we should see
 
 .. code:: bash
@@ -287,3 +307,9 @@ So we can visualize the waiting for angular within javascript and from within th
         unittest.main()
 
 I went through a couple interations before settling on the above. Let me go through the syncronous javascript script. First, I like the simplicity of it. One iteration had a couple of calls to notifyWhenNoOutstandingRequests()
+
+To Add - Discussion on decision to use syncronous javascript call verses asyncronous call.
+
+Implicit Wait for Angular
+-------------------------
+To Add - Disscussion about this functionality and how it was tested.
