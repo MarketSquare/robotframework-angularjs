@@ -129,6 +129,8 @@ And if we activate our virtual Python instance we should see
     selenium (2.53.6)
     setuptools (8.2.1)
 
+Note your versions may be different then mine listed here but key is you have installed robotframework and selenium packages and have **not** installed selenium2library as we will use the source code instead.
+
 Starting the modified testserver
 --------------------------------
 
@@ -176,7 +178,7 @@ Note there is currently an issue with the Selenium2Library test runner script wh
 Understanding how AngularJSLibrary works
 ----------------------------------------
 
-It is important to understand what is going on in the underlying library and there are many reasons for that. For one as I continue to develop this library I realize some assumptions and thus implementations are simply wrong. I also have very narrow focus as my daily work focuses on a single (and usually older) version of AngularJS. So there could be issues I am not seeing and thus not addressing. These and many more reasons support the argument thats as a library user we should all be well informed as to how the library works and what is Protractor / AngularJS doing in the functions we are mimicing.
+It is important for you, the end user, to understand what is going on in the underlying library and there are many reasons for that. For one as I continue to develop this library I realize some initial assumptions and thus original implementations were simply wrong. I also have very narrow focus as my daily work focuses on a single (and usually older) version of AngularJS. So there could be issues I am not seeing and thus not addressing. These and many more reasons support the argument that as a library user we should all be well informed as to how the library works and what is Protractor / AngularJS doing in the functions we are mimicing.
 
 Let's start off by examining the waitForAngular functionality in Protractor. At the core is this function (with some code removed) in ptor/lib/clientsidescripts.js
 
@@ -241,7 +243,7 @@ In a browser navigate to
    
    http://localhost:7000/testapp/ng1/alt_root_index.html#/async
 
-[You'll see here I am using the angular1 portion of testapp. Also I am using the alt_root_index so I can hardode which version of Angular1.x I'll want.] With the site running open the developers tools (F12) and in the console editor paste the following code, but before you run it let's tear it apart.
+[You'll see here I am using the angular1 portion of testapp. Also I am using the alt_root_index so I can hardcode which version of Angular1.x I'll want.] With the site running open the developers tools (F12) and in the console editor paste the following code, but before you run it let's tear it apart.
 
 .. code ::  javascript
 
@@ -260,7 +262,7 @@ In a browser navigate to
 
 You should see it is basically a call to setInterval which will continually call the function with a 10 ms delay each time till the interval is cleared. The function it is calling basically outputs a dot, '.', and calls the notifyWhenNoOutstandingRequests function from the waitForAngular passing along the callback. That callback will print out a star, '*', to the console. Want to take a guess as to what will happen when you run this code?
 
-You will see a continual series of dots then stars printed to the console. Now on the async test page click the button label $timeout. Only dots are printed to the console for some time. Then only stars. What is happening at this time? When only the dots are outputed we are waiting for angular. And when just the stars are print, its all those callbacks returning while we were waiting for angular to complete. God ahead and some of the other asyncrouous actions on the async page and see what the output is.
+You will see a continual series of dots then stars printed to the console. Now on the async test page click the button label $timeout. Only dots are printed to the console for some time. Then only stars. What is happening at this time? When only the dots are outputed we are waiting for angular. More so, the callback that would print stars has not returned. And when just the stars are print, its all those callbacks returning while we were waiting for angular to complete. Go ahead and click on some of the other asyncrouous actions on the async page and see what the output is.
 
 Note when you want to stop the output type the following line into the console to stop the continious interval call.
 
@@ -306,9 +308,11 @@ So we can visualize the waiting for angular within javascript and from within th
     if __name__ == "__main__":
         unittest.main()
 
-I went through a couple interations before settling on the above. Let me go through the syncronous javascript script. First, I like the simplicity of it. One iteration had a couple of calls to notifyWhenNoOutstandingRequests()
+I went through a couple interations before settling on the above. Let me go through the syncronous javascript script. First, I like the simplicity of it. One iteration had a couple of calls to notifyWhenNoOutstandingRequests() with the (incorrect) thinking that I needed to ask twice to force the javascript execution stack to push through, if you will, the callback function. Remember, having the callback function return (with false) is the indication we are not waiting. But it turns out this not necessary as the function notifyWhenNoOutstandingRequests immediately calls the callback function if the outstanding request count is zero and thus sets the waiting flag to false. Summarizing, the javascript code sets the waiting flag to true stating we are waiting, calls notifyWhenNoOutstandingRequests and if not waiting sets the flag to false then returns the flag. So with a syncronous call we get back an immediate answers of the state of angular.
 
-To Add - Discussion on decision to use syncronous javascript call verses asyncronous call.
+The use of a syncronous call by the AngularJSLibrary differs from other non-WebDriverJS ports of protractor. Almost all other ports use asyncronous javascript call. For this I don't understand. I understand why I choose a syncronious call but I don't see why asynchronous. So just as above I broke it down I tried to make an asycronous call to do the same. No luck. Then I did the second option, Google. [Note, this is the correct order. I tried something first and then tried Google. This is the best approach because it helps you to really think about the problem and not be trapped by the first answer that comes up.] So I tired Google and ... no luck. Some good resources but nothing worked as expected. Then I had the ah ha moment (which was really a duh moment) - Selenium test code!
+
+The javascript tests can be found under py/test/selenium/webdriver/common/executing_async_javascript_tests.py. These async tests make more sense (to me at least) but don't give much depth to asyncronous javascript calls.
 
 Implicit Wait for Angular
 -------------------------
