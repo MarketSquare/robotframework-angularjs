@@ -25,11 +25,12 @@ Alternatively, to install from source:
 
 Keyword Usage
 -------------
-In order to use the keywords you have to include AngularJSLibrary in the settings section of your test.
+In order to use the keywords you have to include AngularJSLibrary in the settings section of your test. Note will will need to include the Selenium2Library **before** you import the AngularJSLibrary.
 
 .. code::  robotframework
 
     *** Settings ***
+    Library         Selenium2Library
     Library         AngularJSLibrary
     ...
     
