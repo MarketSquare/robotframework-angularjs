@@ -310,10 +310,148 @@ So we can visualize the waiting for angular within javascript and from within th
 
 I went through a couple interations before settling on the above. Let me go through the syncronous javascript script. First, I like the simplicity of it. One iteration had a couple of calls to notifyWhenNoOutstandingRequests() with the (incorrect) thinking that I needed to ask twice to force the javascript execution stack to push through, if you will, the callback function. Remember, having the callback function return (with false) is the indication we are not waiting. But it turns out this not necessary as the function notifyWhenNoOutstandingRequests immediately calls the callback function if the outstanding request count is zero and thus sets the waiting flag to false. Summarizing, the javascript code sets the waiting flag to true stating we are waiting, calls notifyWhenNoOutstandingRequests and if not waiting sets the flag to false then returns the flag. So with a syncronous call we get back an immediate answers of the state of angular.
 
-The use of a syncronous call by the AngularJSLibrary differs from other non-WebDriverJS ports of protractor. Almost all other ports use asyncronous javascript call. For this I don't understand. I understand why I choose a syncronious call but I don't see why asynchronous. So just as above I broke it down I tried to make an asycronous call to do the same. No luck. Then I did the second option, Google. [Note, this is the correct order. I tried something first and then tried Google. This is the best approach because it helps you to really think about the problem and not be trapped by the first answer that comes up.] So I tired Google and ... no luck. Some good resources but nothing worked as expected. Then I had the ah ha moment (which was really a duh moment) - Selenium test code!
+The use of a syncronous call by the AngularJSLibrary differs from other non-WebDriverJS ports of protractor. Almost all other ports use asyncronous javascript call. For this I don't understand [1]_. I understand why I choose a syncronious call but I don't see why asynchronous. So just as above I broke it down I tried to make an asycronous call to do the same. No luck. Then I did the second option, Google. [Note, this is the correct order. I tried something first and then tried Google. This is the best approach because it helps you to really think about the problem and not be trapped by the first answer that comes up.] So I tired Google and ... no luck. Some good resources but nothing worked as expected. Then I had the ah ha moment (which was really a duh moment) - Selenium test code!
 
 The javascript tests can be found under py/test/selenium/webdriver/common/executing_async_javascript_tests.py. These async tests make more sense (to me at least) but don't give much depth to asyncronous javascript calls.
 
+...[I think I need to finish this thought]...
+
 Implicit Wait for Angular
 -------------------------
-To Add - Disscussion about this functionality and how it was tested.
+As advertised on Protractor's homepage, Protractor "can automatically execute the next step in your test the moment the webpage finishes pending tasks, so you don’t have to worry about waiting for your test and webpage to sync." This implicit wait for angular functionality is implemented at couple points. First, as found in the ElementArrayFinder, "the first time [Protractor is] looking for an element". Second, as noted in protractor/lib/plugins.ts, "[b]etween every webdriver action, Protractor calls browser.waitForAngular() to make sure that Angular has no outstanding $http or $timeout calls."  So whenever Protractor looks for an element [2]_ or whenever it makes a Selenium WebDriverJS library call it waits for angular thus fufilling the claim that you no longer need explicit waits. For the AngularJSLibrary then we will also want to wait when looking for an element or when calling a selenium method.
+
+Interestingly enough, for the Selenium2Library when one makes a selenium call one is also looking for an element. This leads to a really slick (IMHO) solution for the Angular2Library. `Here it is<https://github.com/Selenium2Library/robotframework-angularjs/blob/master/AngularJSLibrary/__init__.py#L69>`_...
+
+.. code ::  python
+
+    class ngElementFinder(ElementFinder):
+        def __init__(self, ignore_implicit_angular_wait=False):
+            super(ngElementFinder, self).__init__()
+            self.ignore_implicit_angular_wait = ignore_implicit_angular_wait
+    
+        def find(self, browser, locator, tag=None):
+            timeout = self._s2l.get_selenium_timeout()
+            timeout = timestr_to_secs(timeout)
+    
+            if not self.ignore_implicit_angular_wait:
+                try:
+                    WebDriverWait(self._s2l._current_browser(), timeout, 0.2)\
+                        .until_not(lambda x: self._s2l._current_browser().execute_script(js_waiting_var))
+                except TimeoutException:
+                    pass
+            strategy = ElementFinder.find(self, browser, locator, tag=None)
+            return strategy
+
+Essentially we override the find method of Selenium2Library. So whenever you pass a locator to one of the Selenium2Library keywords you are calling, implicitly, wait for angular. One can see this in the Robot Framework log file when you have set loglevel to ``DEBUG``. Here is the log file output when we click an element
+
+.. code ::
+
+    KEYWORD Selenium2Library . Click Element model=show
+    Documentation: 	
+    
+    Click element identified by `locator`.
+    Start / End / Elapsed: 	20161112 11:45:37.794 / 20161112 11:45:37.917 / 00:00:00.123
+    11:45:37.794 	INFO 	Clicking element 'model=show'. 	
+    11:45:37.795 	DEBUG 	POST http://127.0.0.1:54972/hub/session/2d75d46c-de31-4a23-85d5-665234b73eb9/execute {"sessionId": "2d75d46c-de31-4a23-85d5-665234b73eb9", "args": [], "script": "\n var waiting = true;\n var callback = function () {waiting = false;}\n var el = document.querySelector('[ng-app]');\n if (typeof angular.element(el).injector() == \"undefined\") {\n throw new Error('root element ([ng-app]) has no injector.' +\n ' this may mean it is not inside ng-app.');\n }\n angular.element(el).injector().get('$browser').\n notifyWhenNoOutstandingRequests(callback);\n return waiting;\n"} 	
+    11:45:37.804 	DEBUG 	Finished Request 	
+    11:45:37.805 	DEBUG 	POST http://127.0.0.1:54972/hub/session/2d75d46c-de31-4a23-85d5-665234b73eb9/execute {"sessionId": "2d75d46c-de31-4a23-85d5-665234b73eb9", "args": [], "script": "return document.querySelectorAll('[ng-model=\"show\"]');"} 	
+    11:45:37.813 	DEBUG 	Finished Request 	
+    11:45:37.814 	DEBUG 	POST http://127.0.0.1:54972/hub/session/2d75d46c-de31-4a23-85d5-665234b73eb9/element/{087ef768-948b-4a41-ad41-422b49d3a143}/click {"sessionId": "2d75d46c-de31-4a23-85d5-665234b73eb9", "id": "{087ef768-948b-4a41-ad41-422b49d3a143}"} 	
+    11:45:37.916 	DEBUG 	Finished Request
+
+The first POST is an execute javascript call where the javascript function is the internal wait for angular script. In this case Angular was not waiting and thus the next POST was a call to the find element; in this case a ng-model and another javascript call. One would see a similar call to the implicit wait for angular even if the locator strategy was an id, css, xpath or any other standard locator strategy. As compared to the above example here is the (truncated) output when there is a stack of unfufilled promises
+
+.. code ::
+
+    KEYWORD Selenium2Library . Click Button css=[ng-click="slowAngularTimeoutHideButton()"]
+    Documentation: 	
+    
+    Clicks a button identified by `locator`.
+    Start / End / Elapsed: 	20161112 11:53:41.863 / 20161112 11:53:47.127 / 00:00:05.264
+    11:53:41.864 	INFO 	Clicking button 'css=[ng-click="slowAngularTimeoutHideButton()"]'. 	
+    11:53:41.865 	DEBUG 	POST http://127.0.0.1:59197/hub/session/2b715259-07c2-41d4-90a8-0fa97e271447/execute {"sessionId": "2b715259-07c2-41d4-90a8-0fa97e271447", "args": [], "script": "\n var waiting = true;\n var callback = function () {waiting = false;}\n var el = document.querySelector('[ng-app]');\n if (typeof angular.element(el).injector() == \"undefined\") {\n throw new Error('root element ([ng-app]) has no injector.' +\n ' this may mean it is not inside ng-app.');\n }\n angular.element(el).injector().get('$browser').\n notifyWhenNoOutstandingRequests(callback);\n return waiting;\n"} 	
+    11:53:41.879 	DEBUG 	Finished Request 	
+    11:53:42.080 	DEBUG 	POST http://127.0.0.1:59197/hub/session/2b715259-07c2-41d4-90a8-0fa97e271447/execute {"sessionId": "2b715259-07c2-41d4-90a8-0fa97e271447", "args": [], "script": "\n var waiting = true;\n var callback = function () {waiting = false;}\n var el = document.querySelector('[ng-app]');\n if (typeof angular.element(el).injector() == \"undefined\") {\n throw new Error('root element ([ng-app]) has no injector.' +\n ' this may mean it is not inside ng-app.');\n }\n angular.element(el).injector().get('$browser').\n notifyWhenNoOutstandingRequests(callback);\n return waiting;\n"} 	
+    11:53:42.096 	DEBUG 	Finished Request
+    
+    ...                 ...     ...
+    
+    11:53:47.037 	DEBUG 	POST http://127.0.0.1:59197/hub/session/2b715259-07c2-41d4-90a8-0fa97e271447/execute {"sessionId": "2b715259-07c2-41d4-90a8-0fa97e271447", "args": [], "script": "\n var waiting = true;\n var callback = function () {waiting = false;}\n var el = document.querySelector('[ng-app]');\n if (typeof angular.element(el).injector() == \"undefined\") {\n throw new Error('root element ([ng-app]) has no injector.' +\n ' this may mean it is not inside ng-app.');\n }\n angular.element(el).injector().get('$browser').\n notifyWhenNoOutstandingRequests(callback);\n return waiting;\n"} 	
+    11:53:47.052 	DEBUG 	Finished Request 	
+    11:53:47.053 	DEBUG 	POST http://127.0.0.1:59197/hub/session/2b715259-07c2-41d4-90a8-0fa97e271447/elements {"using": "css selector", "sessionId": "2b715259-07c2-41d4-90a8-0fa97e271447", "value": "[ng-click=\"slowAngularTimeoutHideButton()\"]"} 	
+    11:53:47.058 	DEBUG 	Finished Request 	
+    11:53:47.059 	DEBUG 	POST http://127.0.0.1:59197/hub/session/2b715259-07c2-41d4-90a8-0fa97e271447/element/{e9c1e40c-74c7-44a8-801e-45151329fadc}/click {"sessionId": "2b715259-07c2-41d4-90a8-0fa97e271447", "id": "{e9c1e40c-74c7-44a8-801e-45151329fadc}"} 	
+    11:53:47.127 	DEBUG 	Finished Request
+
+Note the time before and after the (...); about five seconds has passed. Here I truncated, so this printout is not so long, all the javascript calls asking angular if it has any outstanding promises. Eventually the promise have been fufilled and the script looks for an element and clicks it.
+
+This DEBUG output comes from the internal AngularJSLibrary acceptance tests
+
+.. code :: RobotFramework
+
+    Implicit Wait For Angular On Timeout
+        Wait For Angular
+    
+        Click Button  css=[ng-click="slowAngularTimeout()"]
+    
+        Click Button  css=[ng-click="slowAngularTimeoutHideButton()"]
+    
+    Implicit Wait For Angular On Timeout With Promise
+        Wait For Angular
+    
+        Click Button  css=[ng-click="slowAngularTimeoutPromise()"]
+    
+        Click Button  css=[ng-click="slowAngularTimeoutPromiseHideButton()"]
+
+To the Protractor testapp, I added some buttons
+
+.. code :: html
+
+    <li>
+      <button ng-click="slowAngularTimeout()">$timeout</button>
+      <span ng-bind="slowAngularTimeoutStatus"></span>
+      <button ng-show="slowAngularTimeoutCompleted" ng-click="slowAngularTimeoutHideButton()">Hide</button>
+    </li>
+    <li>
+      <button ng-click="slowAngularTimeoutPromise()">$timeout promise</button>
+      <span ng-bind="slowAngularTimeoutPromiseStatus"></span>
+      <button ng-show="slowAngularTimeoutPromiseCompleted" ng-click="slowAngularTimeoutPromiseHideButton()">Hide</button>
+    </li>
+    <li>
+      <button ng-click="slowHttpPromise()">http promise</button>
+      <span ng-bind="slowHttpPromiseStatus"></span>
+      <button ng-show="slowHttpPromiseCompleted" ng-click="slowHttpPromiseHideButton()">Hide</button>
+    </li>
+
+that will become visible when the "timeouts" are completed. As shown in the test above, the script clicks both buttons in succession without any explicit delay in the script. This provides us a good test suite to validate the implicit wait for angular. I also added a function to re-hide the button so the tests can be reset. One more test allows us the ability to validate this click the two buttons without delay will fail if we ignore the implicit wait for angular
+
+.. code :: robotframework
+
+    Toggle Implicit Wait For Angular Flag
+        Element Should Not Be Visible  css=[ng-click="slowAngularTimeoutHideButton()"]
+    
+        Set Ignore Implicit Angular Wait  ${true}
+    
+        Click Button  css=[ng-click="slowAngularTimeout()"]
+    
+        Run Keyword And Expect Error  *  Click Button  css=[ng-click="slowAngularTimeoutHideButton()"]
+    
+        Wait For Angular
+        Element Should Be Visible  css=[ng-click="slowAngularTimeoutHideButton()"]
+        Click Element  css=[ng-click="slowAngularTimeoutHideButton()"]
+        Element Should Not Be Visible  css=[ng-click="slowAngularTimeoutHideButton()"]
+    
+        Set Ignore Implicit Angular Wait  ${false}
+    
+        Click Button  css=[ng-click="slowAngularTimeout()"]
+    
+        Click Button  css=[ng-click="slowAngularTimeoutHideButton()"]
+    
+        Element Should Not Be Visible  css=[ng-click="slowAngularTimeoutHideButton()"]
+
+Footnotes
+---------
+
+[1] Ok, not entirely true. I understand WebDriverJS and Protractor is asycronious javascript and thus when one makes a call to a function you may get the response back in some unknown amount of time or asycronously. Fine. But that is not what I want here. I want an answer back now telling me whether or not the current (now) state of Angular has any outstanding promises or whether or not it is waiting, right now. Don't delay. Thus I am making, conscientiously, a syncronous javascript call and then "waiting" or polling within the AngularJSlibrary.
+
+[2] The statement that "whenever Protractor looks for an element" may not be entitrely true. If you read the code the waitForAngular call is when you are looking for "all" elements, as in ``element.all(by.id('notPresentElementID'))``. [See `protractor/lib/element.ts<https://github.com/angular/protractor/blob/6b7b6fb751f574056cb80b7238f62c77ef78497e/lib/element.ts#L168>`_]. It is unclear, to me without spending a lot more time tracing through the code atleast, that a call to say ``element(by.binding('username'))``, for example, would go through element.all and thus be invoking the implicit wait for angular.
