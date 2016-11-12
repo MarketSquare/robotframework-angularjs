@@ -35,6 +35,19 @@ js_waiting_var="""
     return waiting;
 """
 
+js_waiting_var_root="""
+    var waiting = true;
+    var callback = function () {waiting = false;}
+    var el = document.querySelector(arguments[0]);
+    if (typeof angular.element(el).injector() == "undefined") {
+        throw new Error('root element ([ng-app]) has no injector.' +
+               ' this may mean it is not inside ng-app.');
+    }
+    angular.element(el).injector().get('$browser').
+                notifyWhenNoOutstandingRequests(callback);
+    return waiting;
+"""
+
 js_get_pending_http_requests="""
 var el = document.querySelector('[ng-app]');
 var $injector = angular.element(el).injector();
@@ -67,8 +80,9 @@ def is_boolean(item):
     return isinstance(item,bool)
 
 class ngElementFinder(ElementFinder):
-    def __init__(self, ignore_implicit_angular_wait=False):
+    def __init__(self, root_selector, ignore_implicit_angular_wait=False):
         super(ngElementFinder, self).__init__()
+        self.root_selector = root_selector
         self.ignore_implicit_angular_wait = ignore_implicit_angular_wait
 
     def find(self, browser, locator, tag=None):
@@ -78,7 +92,7 @@ class ngElementFinder(ElementFinder):
         if not self.ignore_implicit_angular_wait:
             try:
                 WebDriverWait(self._s2l._current_browser(), timeout, 0.2)\
-                    .until_not(lambda x: self._s2l._current_browser().execute_script(js_waiting_var))
+                    .until_not(lambda x: self._s2l._current_browser().execute_script(js_waiting_var_root, self.root_selector))
             except TimeoutException:
                 pass
         strategy = ElementFinder.find(self, browser, locator, tag=None)
@@ -119,7 +133,7 @@ class ngElementFinder(ElementFinder):
 class AngularJSLibrary:
 
     ROBOT_LIBRARY_SCOPE = 'GLOBAL'
-    ROBOT_LIBRARY_VERSION = '0.0.3.dev1'
+    ROBOT_LIBRARY_VERSION = '0.0.5.dev1'
 
     def __init__(self,
                  root_selector=None,
@@ -144,8 +158,15 @@ class AngularJSLibrary:
         """
 
         self.ignore_implicit_angular_wait = ignore_implicit_angular_wait
+
+        #import pdb,sys;pdb.Pdb(stdout=sys.__stdout__).set_trace()
+        if not root_selector:
+            self.root_selector = '[ng-app]'
+        else:
+            self.root_selector = root_selector
+            
         # Override default locators to include binding {{ }}
-        self._s2l._element_finder = ngElementFinder(ignore_implicit_angular_wait)
+        self._s2l._element_finder = ngElementFinder(self.root_selector, ignore_implicit_angular_wait)
 
         # Add Angular specific locator strategies
         self._s2l.add_location_strategy('ng-binding', self._find_by_binding, persist=True)
@@ -169,7 +190,7 @@ class AngularJSLibrary:
 
         try:
             WebDriverWait(self._s2l._current_browser(), timeout, 0.2)\
-                .until_not(lambda x: self._s2l._current_browser().execute_script(js_waiting_var))
+                .until_not(lambda x: self._s2l._current_browser().execute_script(js_waiting_var_root, self.root_selector))
         except TimeoutException:
             if self.trackOutstandingTimeouts:
                 timeouts = self._exec_js('return window.NG_PENDING_TIMEOUTS')
