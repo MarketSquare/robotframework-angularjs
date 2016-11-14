@@ -128,7 +128,7 @@ class AngularJSLibrary:
     ):
         """AngularJSLibrary can be imported with optional arguments.
 
-        Not Yet Implemented - `root_selector` is the locator of the root angular object.
+        `root_selector` is the locator of the root angular object.
 
         Not Yet Implemented - `implicit_angular_wait` is the implicit timeout that AngularJS library
                              waits for angular to finish rendering and waits for any outstanding $http calls.
@@ -142,6 +142,14 @@ class AngularJSLibrary:
         | Library `|` AngularJSLibrary `|` ignore_implicit_angular_wait=${true}   | # Will not wait for angular syncronization
 
         """
+        global js_wait_for_angular
+        global js_waiting_var
+        global js_get_pending_http_requests
+        if root_selector:
+            js_wait_for_angular = js_wait_for_angular.replace('[ng-app]', root_selector)
+            js_waiting_var = js_waiting_var.replace('[ng-app]', root_selector)
+            js_get_pending_http_requests = js_get_pending_http_requests.replace('[ng-app]', root_selector)
+
 
         self.ignore_implicit_angular_wait = ignore_implicit_angular_wait
         # Override default locators to include binding {{ }}
