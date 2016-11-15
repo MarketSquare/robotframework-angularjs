@@ -8,26 +8,41 @@ from Selenium2Library.locators import ElementFinder
 import time
 
 js_wait_for_angular = """
-var el = document.querySelector('[ng-app]');
-if (typeof angular.element(el).injector() == "undefined") {
-    throw new Error('root element ([ng-app]) has no injector.' +
-           ' this may mean it is not inside ng-app.');
-}
-try {
-    angular.element(el).injector().get('$browser').notifyWhenNoOutstandingRequests();
-} catch (e) {
-    return true;
-}
+    var loc_list = ['ng-app', 'ng_app', 'data-ng-app', 'x-ng-app']
+    var el = null;
+    loc_list.forEach(function(loc) {
+        var check = document.querySelector('[' + loc + ']');
+        if (check != null) {
+            el = check;
+        }
+    });
+    if (typeof angular.element(el).injector() == "undefined") {
+        throw new Error('Check' + el + 'root element ([ng-app]) has no injector.' +
+               ' this may mean it is not inside ng-app.');
+    }
+    try {
+        angular.element(el).injector().get('$browser')
+            .notifyWhenNoOutstandingRequests();
+    } catch (e) {
+        return true;
+    }
 
-return false;
+    return false;
 """
 
 js_waiting_var="""
     var waiting = true;
     var callback = function () {waiting = false;}
-    var el = document.querySelector('[ng-app]');
+    var loc_list = ['ng-app', 'ng_app', 'data-ng-app', 'x-ng-app']
+    var el = null;
+    loc_list.forEach(function(loc) {
+        var check = document.querySelector('[' + loc + ']');
+        if (check != null) {
+            el = check;
+        }
+    });
     if (typeof angular.element(el).injector() == "undefined") {
-        throw new Error('root element ([ng-app]) has no injector.' +
+        throw new Error('Check' + el + 'root element ([ng-app]) has no injector.' +
                ' this may mean it is not inside ng-app.');
     }
     angular.element(el).injector().get('$browser').
@@ -36,10 +51,17 @@ js_waiting_var="""
 """
 
 js_get_pending_http_requests="""
-var el = document.querySelector('[ng-app]');
-var $injector = angular.element(el).injector();
-var $http = $injector.get('$http');
-return $http.pendingRequests;
+    var loc_list = ['ng-app', 'ng_app', 'data-ng-app', 'x-ng-app']
+    var el = null;
+    loc_list.forEach(function(loc) {
+        var check = document.querySelector('[' + loc + ']');
+        if (check != null) {
+            el = check;
+        }
+    });
+    var $injector = angular.element(el).injector();
+    var $http = $injector.get('$http');
+    return $http.pendingRequests;
 """
 
 js_repeater_min = """
