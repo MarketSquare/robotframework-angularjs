@@ -69,6 +69,7 @@ def is_boolean(item):
 class ngElementFinder(ElementFinder):
     def __init__(self, ignore_implicit_angular_wait=False):
         super(ngElementFinder, self).__init__()
+        self._strategies = self._s2l._element_finder._strategies
         self.ignore_implicit_angular_wait = ignore_implicit_angular_wait
 
     def find(self, browser, locator, tag=None):
