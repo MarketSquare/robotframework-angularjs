@@ -7,22 +7,7 @@ from Selenium2Library.locators import ElementFinder
 
 import time
 
-js_wait_for_angular = """
-var el = document.querySelector('[ng-app]');
-if (typeof angular.element(el).injector() == "undefined") {
-    throw new Error('root element ([ng-app]) has no injector.' +
-           ' this may mean it is not inside ng-app.');
-}
-try {
-    angular.element(el).injector().get('$browser').notifyWhenNoOutstandingRequests();
-} catch (e) {
-    return true;
-}
-
-return false;
-"""
-
-js_waiting_var="""
+js_wait_for_angularjs = """
     var waiting = true;
     var callback = function () {waiting = false;}
     var el = document.querySelector('[ng-app]');
@@ -34,6 +19,50 @@ js_waiting_var="""
                 notifyWhenNoOutstandingRequests(callback);
     return waiting;
 """
+
+js_wait_for_angular = """
+    var waiting = true;
+    var callback = function () {waiting = false;}
+    var el = document.querySelector('app-root');
+    if (window.angular && !(window.angular.version &&
+          window.angular.version.major > 1)) {
+      /* ng1 */
+      window.log('ng1')
+      angular.element(el).injector().get('$browser').
+          notifyWhenNoOutstandingRequests(callback);
+    } else if (window.getAngularTestability) {
+      console.log('window.getAngularTestability')
+      window.getAngularTestability(el).whenStable(callback);
+    } else if (window.getAllAngularTestabilities) {
+      console.log('window.getAllAngularTestabilities')
+      var testabilities = window.getAllAngularTestabilities();
+      var count = testabilities.length;
+      var decrement = function() {
+        count--;
+        if (count === 0) {
+          callback();
+        }
+      };
+      testabilities.forEach(function(testability) {
+        testability.whenStable(decrement);
+      });
+    } else if (!window.angular) {
+      throw new Error('window.angular is undefined.  This could be either ' +
+          'because this is a non-angular page or because your test involves ' +
+          'client-side navigation. Currently the AngularJS Library is not ' +
+          'designed to wait in such situations. Instead you should explicitly ' +
+          'call the "Wait For Angular" keyword.');
+    } else if (window.angular.version >= 2) {
+      throw new Error('You appear to be using angular, but window.' +
+          'getAngularTestability was never set.  This may be due to bad ' +
+          'obfuscation.');
+    } else {
+      throw new Error('Cannot get testability API for unknown angular ' +
+          'version "' + window.angular.version + '"');
+    }
+    return waiting;
+"""
+
 
 js_get_pending_http_requests="""
 var el = document.querySelector('[ng-app]');
@@ -78,7 +107,7 @@ class ngElementFinder(ElementFinder):
         if not self.ignore_implicit_angular_wait:
             try:
                 WebDriverWait(self._s2l._current_browser(), timeout, 0.2)\
-                    .until_not(lambda x: self._s2l._current_browser().execute_script(js_waiting_var))
+                    .until_not(lambda x: self._s2l._current_browser().execute_script(js_wait_for_angular))
             except TimeoutException:
                 pass
         strategy = ElementFinder.find(self, browser, locator, tag=None)
@@ -169,14 +198,15 @@ class AngularJSLibrary:
 
         try:
             WebDriverWait(self._s2l._current_browser(), timeout, 0.2)\
-                .until_not(lambda x: self._s2l._current_browser().execute_script(js_waiting_var))
+                .until_not(lambda x: self._s2l._current_browser().execute_script(js_wait_for_angular))
         except TimeoutException:
-            if self.trackOutstandingTimeouts:
-                timeouts = self._exec_js('return window.NG_PENDING_TIMEOUTS')
-                logger.debug(timeouts)
-            pendingHttps = self._exec_js(js_get_pending_http_requests)
-            logger.debug(pendingHttps)
-            raise TimeoutException(error)
+            pass
+            #if self.trackOutstandingTimeouts:
+            #    timeouts = self._exec_js('return window.NG_PENDING_TIMEOUTS')
+            #    logger.debug(timeouts)
+            #pendingHttps = self._exec_js(js_get_pending_http_requests)
+            #logger.debug(pendingHttps)
+            #raise TimeoutException(error)
 
     def set_ignore_implicit_angular_wait(self, ignore):
         if not is_boolean(ignore):
