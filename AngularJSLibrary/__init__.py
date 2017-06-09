@@ -23,18 +23,15 @@ js_wait_for_angularjs = """
 js_wait_for_angular = """
     var waiting = true;
     var callback = function () {waiting = false;}
-    var el = document.querySelector('app-root');
+    var el = document.querySelector('[ng-app]');
     if (window.angular && !(window.angular.version &&
           window.angular.version.major > 1)) {
       /* ng1 */
-      window.log('ng1')
       angular.element(el).injector().get('$browser').
           notifyWhenNoOutstandingRequests(callback);
     } else if (window.getAngularTestability) {
-      console.log('window.getAngularTestability')
-      window.getAngularTestability(el).whenStable(callback);
+      return !window.getAngularTestability(el).isStable(callback);
     } else if (window.getAllAngularTestabilities) {
-      console.log('window.getAllAngularTestabilities')
       var testabilities = window.getAllAngularTestabilities();
       var count = testabilities.length;
       var decrement = function() {
