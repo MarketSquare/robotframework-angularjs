@@ -138,7 +138,7 @@ class ngElementFinder(ElementFinder):
 class AngularJSLibrary:
 
     ROBOT_LIBRARY_SCOPE = 'GLOBAL'
-    ROBOT_LIBRARY_VERSION = '0.0.5.dev1'
+    ROBOT_LIBRARY_VERSION = '0.0.5'
 
     def __init__(self,
                  root_selector=None,
