@@ -32,17 +32,10 @@ js_wait_for_angular = """
     } else if (window.getAngularTestability) {
       return !window.getAngularTestability(el).isStable(callback);
     } else if (window.getAllAngularTestabilities) {
-      var testabilities = window.getAllAngularTestabilities();
-      var count = testabilities.length;
-      var decrement = function() {
-        count--;
-        if (count === 0) {
-          callback();
-        }
-      };
-      testabilities.forEach(function(testability) {
-        testability.whenStable(decrement);
-      });
+      throw new Error('AngularJSLibrary does not currently handle ' +
+          'window.getAllAngularTestabilities. It does work on sites supporting ' +
+          'window.getAngularTestability. If you require this functionality, please ' +
+          'the library authors or reach out to the Robot Framework Users Group.');
     } else if (!window.angular) {
       throw new Error('window.angular is undefined.  This could be either ' +
           'because this is a non-angular page or because your test involves ' +
