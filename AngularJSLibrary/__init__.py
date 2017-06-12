@@ -148,7 +148,10 @@ class AngularJSLibrary:
     ):
         """AngularJSLibrary can be imported with optional arguments.
 
-        Not Yet Implemented - `root_selector` is the locator of the root angular object.
+        `root_selector` is the locator of the root angular object. If none is given it defaults to `[ng-app]`.
+        For more information please refer to the following documentation:
+           $rootElement - AngularJS API documentation - https://docs.angularjs.org/api/ng/service/$rootElement
+           ngApp - AngularJS API documentation - https://docs.angularjs.org/api/ng/directive/ngApp
 
         Not Yet Implemented - `implicit_angular_wait` is the implicit timeout that AngularJS library
                              waits for angular to finish rendering and waits for any outstanding $http calls.

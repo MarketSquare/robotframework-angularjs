@@ -1,5 +1,12 @@
 Changelog
 =========
+0.0.6 (unreleased)
+------------------
+Changes:
+
+- Allow for setting root selector when importing library.
+  [emanlove]
+
 0.0.5 (2017-06-09)
 ------------------
 Changes:
@@ -11,6 +18,10 @@ Changes:
   See TESTING.rst.
   [emanlove]
   
+- Temporarily removed diagnostic call for retrieving pending HTTP
+  requests when `Wait For Angular` keyword fails.
+  [emanlove]
+
 0.0.4 (2016-09-12)
 ------------------
 Changes:
