@@ -1,6 +1,16 @@
 Changelog
 =========
+0.0.5 (2017-06-09)
+------------------
+Changes:
 
+- Added support for Angular 2 under `Wait For Angular` keyword.
+  [emanlove]
+
+- Updated documentation around Angular 2 development and testing.
+  See TESTING.rst.
+  [emanlove]
+  
 0.0.4 (2016-09-12)
 ------------------
 Changes:

@@ -7,22 +7,7 @@ from Selenium2Library.locators import ElementFinder
 
 import time
 
-js_wait_for_angular = """
-var el = document.querySelector('[ng-app]');
-if (typeof angular.element(el).injector() == "undefined") {
-    throw new Error('root element ([ng-app]) has no injector.' +
-           ' this may mean it is not inside ng-app.');
-}
-try {
-    angular.element(el).injector().get('$browser').notifyWhenNoOutstandingRequests();
-} catch (e) {
-    return true;
-}
-
-return false;
-"""
-
-js_waiting_var="""
+js_wait_for_angularjs = """
     var waiting = true;
     var callback = function () {waiting = false;}
     var el = document.querySelector('[ng-app]');
@@ -35,18 +20,39 @@ js_waiting_var="""
     return waiting;
 """
 
-js_waiting_var_root="""
+js_wait_for_angular = """
     var waiting = true;
     var callback = function () {waiting = false;}
     var el = document.querySelector(arguments[0]);
-    if (typeof angular.element(el).injector() == "undefined") {
-        throw new Error('root element ([ng-app]) has no injector.' +
-               ' this may mean it is not inside ng-app.');
+    if (window.angular && !(window.angular.version &&
+          window.angular.version.major > 1)) {
+      /* ng1 */
+      angular.element(el).injector().get('$browser').
+          notifyWhenNoOutstandingRequests(callback);
+    } else if (window.getAngularTestability) {
+      return !window.getAngularTestability(el).isStable(callback);
+    } else if (window.getAllAngularTestabilities) {
+      throw new Error('AngularJSLibrary does not currently handle ' +
+          'window.getAllAngularTestabilities. It does work on sites supporting ' +
+          'window.getAngularTestability. If you require this functionality, please ' +
+          'the library authors or reach out to the Robot Framework Users Group.');
+    } else if (!window.angular) {
+      throw new Error('window.angular is undefined.  This could be either ' +
+          'because this is a non-angular page or because your test involves ' +
+          'client-side navigation. Currently the AngularJS Library is not ' +
+          'designed to wait in such situations. Instead you should explicitly ' +
+          'call the "Wait For Angular" keyword.');
+    } else if (window.angular.version >= 2) {
+      throw new Error('You appear to be using angular, but window.' +
+          'getAngularTestability was never set.  This may be due to bad ' +
+          'obfuscation.');
+    } else {
+      throw new Error('Cannot get testability API for unknown angular ' +
+          'version "' + window.angular.version + '"');
     }
-    angular.element(el).injector().get('$browser').
-                notifyWhenNoOutstandingRequests(callback);
     return waiting;
 """
+
 
 js_get_pending_http_requests="""
 var el = document.querySelector('[ng-app]');
@@ -92,7 +98,7 @@ class ngElementFinder(ElementFinder):
         if not self.ignore_implicit_angular_wait:
             try:
                 WebDriverWait(self._s2l._current_browser(), timeout, 0.2)\
-                    .until_not(lambda x: self._s2l._current_browser().execute_script(js_waiting_var_root, self.root_selector))
+                    .until_not(lambda x: self._s2l._current_browser().execute_script(js_wait_for_angular, self.root_selector))
             except TimeoutException:
                 pass
         strategy = ElementFinder.find(self, browser, locator, tag=None)
@@ -133,7 +139,7 @@ class ngElementFinder(ElementFinder):
 class AngularJSLibrary:
 
     ROBOT_LIBRARY_SCOPE = 'GLOBAL'
-    ROBOT_LIBRARY_VERSION = '0.0.5.dev1'
+    ROBOT_LIBRARY_VERSION = '0.0.6dev1'
 
     def __init__(self,
                  root_selector=None,
@@ -159,7 +165,6 @@ class AngularJSLibrary:
 
         self.ignore_implicit_angular_wait = ignore_implicit_angular_wait
 
-        #import pdb,sys;pdb.Pdb(stdout=sys.__stdout__).set_trace()
         if not root_selector:
             self.root_selector = '[ng-app]'
         else:
@@ -190,14 +195,15 @@ class AngularJSLibrary:
 
         try:
             WebDriverWait(self._s2l._current_browser(), timeout, 0.2)\
-                .until_not(lambda x: self._s2l._current_browser().execute_script(js_waiting_var_root, self.root_selector))
+                .until_not(lambda x: self._s2l._current_browser().execute_script(js_wait_for_angular, self.root_selector))
         except TimeoutException:
-            if self.trackOutstandingTimeouts:
-                timeouts = self._exec_js('return window.NG_PENDING_TIMEOUTS')
-                logger.debug(timeouts)
-            pendingHttps = self._exec_js(js_get_pending_http_requests)
-            logger.debug(pendingHttps)
-            raise TimeoutException(error)
+            pass
+            #if self.trackOutstandingTimeouts:
+            #    timeouts = self._exec_js('return window.NG_PENDING_TIMEOUTS')
+            #    logger.debug(timeouts)
+            #pendingHttps = self._exec_js(js_get_pending_http_requests)
+            #logger.debug(pendingHttps)
+            #raise TimeoutException(error)
 
     def set_ignore_implicit_angular_wait(self, ignore):
         if not is_boolean(ignore):

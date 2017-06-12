@@ -17,10 +17,10 @@ Within this root folder we will create the virtualenv and clone source repositor
 
 .. code::  bash
 
-   virtualenv -p /usr/bin/python2.7 --no-site-packages clean-python27-env
+	   virtualenv -p /usr/bin/python2.7 --no-site-packages clean-python27-env
 	   source clean-python27-env/bin/activate
 	   pip install decorator docutils robotframework selenium
-
+	   
 	   git clone git@github.com:Selenium2Library/robotframework-angularjs.git rf-ng
 	   git clone git@github.com:robotframework/Selenium2Library.git rf-s2l
 	   
@@ -35,10 +35,10 @@ I modified the async testapp page so that the implicit wait for angular function
 
 .. code:: bash
 
-    cp rf-ng/AngularJSLibrary/async.html rf-s2l/test/resources/testapp/ng/async/.
-    cp rf-ng/AngularJSLibrary/async.js rf-s2l/test/resources/testapp/ng/async/
+    cp rf-ng/AngularJSLibrary/async.html rf-s2l/test/resources/testapp/ng1/async/.
+    cp rf-ng/AngularJSLibrary/async.js rf-s2l/test/resources/testapp/ng1/async/.
 
-Modifying the test server of Selenium2Library, rf-s2l\test\resources\testserver\testserver.py, add the following method, do_GET, to the StoppableHttpRequestHandler class.
+Modifying the test server of Selenium2Library, rf-s2l\\test\\resources\\testserver\\testserver.py, add the following method, do_GET, to the StoppableHttpRequestHandler class.
 
 .. code:: python
 
@@ -138,7 +138,7 @@ Open a new bash terminal from which we will run the test sever
 
 .. code:: bash
 
-    cd ng
+    cd test-ng
 
     source clean-python27-env/bin/activate
     
@@ -448,6 +448,132 @@ that will become visible when the "timeouts" are completed. As shown in the test
         Click Button  css=[ng-click="slowAngularTimeoutHideButton()"]
     
         Element Should Not Be Visible  css=[ng-click="slowAngularTimeoutHideButton()"]
+
+Angular 2
+---------
+Looking at filling in the gap of Angular 2 support. Taking a look at the the current state of Protractor the `waitForAngular function<https://github.com/angular/protractor/blob/33393cad633e6cb5ce64b3fc8fa5e8a9cae64edd/lib/clientsidescripts.js#L135>`_ has some code to handle both Angular 1 and Angular 2+ code. Taking this Protractor code and combining it with test javascript code above (where we tested tthe core check printing out only '.' while Angular is busy) we have some asemblance of the Angular 1 and Angular 2+ support.
+
+.. code ::  javascript
+
+    var callback = function () {console.log('*')};
+    var el = document.querySelector('[ng-app]');
+    var h = setInterval(function w4ng() {
+        console.log('.');
+        try {
+            if (window.angular && !(window.angular.version &&
+                  window.angular.version.major > 1)) {
+              /* ng1 */
+              angular.element(el).injector().get('$browser').
+                  notifyWhenNoOutstandingRequests(callback);      
+            } else if (window.angular.getTestability) {
+              window.angular.getTestability(el).whenStable(callback);
+            }
+        } catch (err) {
+          console.log(err.message);
+          callback(err.message);
+        }
+      }, 10);
+
+Some important notes on running this script. Since I wrote the above portions of this write-up Firebug has ceased development and it has been combined with Firefox's developer tools. Under Firefox 53 (my current version) console.log when used within the console prompt no longer outputs to the console. [Yes it returns 'undefined' which is well explained out there and is perfectly valid but not very user friendly]. Chrome on the other hand does. So for now you will need to run the above code in the console within Chrome's dev tools. The other issue is a matter of the getTestibility function and its parent object. It appears that with the Angular development this method has been moved in the object tree and renamed. Under Protractor this function is now window.getAngularTestability. While investigating I was using several test sites. The testapp within Protractor does has a Angular 2 version although greatly simplified over the Angular 1 version. Due to some complications of Chrome, running on a VM, limited RAM, building the ng2 testapp with node, etc. I simplified my investigation by using other test sites. I tried angular.io's `tutorial example<https://angular.io/resources/live-examples/toh-6/ts/eplnkr.html >`_ but was slightly problimatic. It also is Angular ver 1.6.3 ?!? which isn't very helpful. I settled upon simply the angular.io site - although ... I am realizing many of these Angular site are still Angular 1.
+
+Ok, this may explain the difference between window.angular.getTestability and window.getAngularTestability. The prior was introduced and available a while back and back in the Angular 1. I was simply lazy in that for my work the notifyWhenNoOutstandingRequests was sufficient. It could be that window.getAngularTestability is purely Angular 2+. ... [Researching] ... Ok form a very brief look, ok one site, it looks like this is the case. Let me put forth what I am thinking
+
+.. code ::  javascript
+
+    var callback = function () {console.log('*')};
+    var el = document.querySelector('[ng-app]');
+    var h = setInterval(function w4ng() {
+        console.log('.');
+        try {
+            if (window.angular && !(window.angular.version &&
+                  window.angular.version.major > 1)) {
+              /* ng1 */
+              angular.element(el).injector().get('$browser').
+                  notifyWhenNoOutstandingRequests(callback);      
+            } else if (window.getAngularTestability) {
+              window.getAngularTestability(el).whenStable(callback);
+            } else if (window.getAllAngularTestabilities) {
+              var testabilities = window.getAllAngularTestabilities();
+              var count = testabilities.length;
+              var decrement = function() {
+                count--;
+                if (count === 0) {
+                  callback();
+                }
+              };
+              testabilities.forEach(function(testability) {
+                testability.whenStable(decrement);
+              });
+            } else if (!window.angular) {
+              throw new Error('window.angular is undefined.  This could be either ' +
+                  'because this is a non-angular page or because your test involves ' +
+                  'client-side navigation. Currently the AngularJS Library is not ' +
+                  'designed to wait in such situations. Instead you should explicitly ' +
+                  'call the \'Wait For Angular\' keyword.');
+            } else if (window.angular.version >= 2) {
+              throw new Error('You appear to be using angular, but window.' +
+                  'getAngularTestability was never set.  This may be due to bad ' +
+                  'obfuscation.');
+            } else {
+              throw new Error('Cannot get testability API for unknown angular ' +
+                  'version "' + window.angular.version + '"');
+            }
+        } catch (err) {
+          console.log(err.message);
+          callback(err.message);
+        }
+      }, 10);
+
+which one could compared with the full Protractor code
+
+.. code ::  javascript
+
+    if (window.angular && !(window.angular.version &&
+          window.angular.version.major > 1)) {
+      /* ng1 */
+      var hooks = getNg1Hooks(rootSelector);
+      if (hooks.$$testability) {
+        hooks.$$testability.whenStable(callback);
+      } else if (hooks.$injector) {
+        hooks.$injector.get('$browser').
+            notifyWhenNoOutstandingRequests(callback);
+      } else if (!!rootSelector) {
+        throw new Error('Could not automatically find injector on page: "' +
+            window.location.toString() + '".  Consider using config.rootEl');
+      } else {
+        throw new Error('root element (' + rootSelector + ') has no injector.' +
+           ' this may mean it is not inside ng-app.');
+      }
+    } else if (rootSelector && window.getAngularTestability) {
+      var el = document.querySelector(rootSelector);
+      window.getAngularTestability(el).whenStable(callback);
+    } else if (window.getAllAngularTestabilities) {
+      var testabilities = window.getAllAngularTestabilities();
+      var count = testabilities.length;
+      var decrement = function() {
+        count--;
+        if (count === 0) {
+          callback();
+        }
+      };
+      testabilities.forEach(function(testability) {
+        testability.whenStable(decrement);
+      });
+    } else if (!window.angular) {
+      throw new Error('window.angular is undefined.  This could be either ' +
+          'because this is a non-angular page or because your test involves ' +
+          'client-side navigation, which can interfere with Protractor\'s ' +
+          'bootstrapping.  See http://git.io/v4gXM for details');
+    } else if (window.angular.version >= 2) {
+      throw new Error('You appear to be using angular, but window.' +
+          'getAngularTestability was never set.  This may be due to bad ' +
+          'obfuscation.');
+    } else {
+      throw new Error('Cannot get testability API for unknown angular ' +
+          'version "' + window.angular.version + '"');
+    }
+
+The biggest difference is the simplification of the Angular 1 code. I could simply add the window.angular.getTestability check. For now I am going to move forward with this and then we can revisit this code.
 
 Footnotes
 ---------
