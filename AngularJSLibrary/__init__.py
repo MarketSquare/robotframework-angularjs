@@ -23,7 +23,7 @@ js_wait_for_angularjs = """
 js_wait_for_angular = """
     var waiting = true;
     var callback = function () {waiting = false;}
-    var el = document.querySelector('[ng-app]');
+    var el = document.querySelector(arguments[0]);
     if (window.angular && !(window.angular.version &&
           window.angular.version.major > 1)) {
       /* ng1 */
@@ -86,8 +86,9 @@ def is_boolean(item):
     return isinstance(item,bool)
 
 class ngElementFinder(ElementFinder):
-    def __init__(self, ignore_implicit_angular_wait=False):
+    def __init__(self, root_selector, ignore_implicit_angular_wait=False):
         super(ngElementFinder, self).__init__()
+        self.root_selector = root_selector
         self.ignore_implicit_angular_wait = ignore_implicit_angular_wait
 
     def find(self, browser, locator, tag=None):
@@ -97,7 +98,7 @@ class ngElementFinder(ElementFinder):
         if not self.ignore_implicit_angular_wait:
             try:
                 WebDriverWait(self._s2l._current_browser(), timeout, 0.2)\
-                    .until_not(lambda x: self._s2l._current_browser().execute_script(js_wait_for_angular))
+                    .until_not(lambda x: self._s2l._current_browser().execute_script(js_wait_for_angular, self.root_selector))
             except TimeoutException:
                 pass
         strategy = ElementFinder.find(self, browser, locator, tag=None)
@@ -163,8 +164,14 @@ class AngularJSLibrary:
         """
 
         self.ignore_implicit_angular_wait = ignore_implicit_angular_wait
+
+        if not root_selector:
+            self.root_selector = '[ng-app]'
+        else:
+            self.root_selector = root_selector
+            
         # Override default locators to include binding {{ }}
-        self._s2l._element_finder = ngElementFinder(ignore_implicit_angular_wait)
+        self._s2l._element_finder = ngElementFinder(self.root_selector, ignore_implicit_angular_wait)
 
         # Add Angular specific locator strategies
         self._s2l.add_location_strategy('ng-binding', self._find_by_binding, persist=True)
@@ -188,7 +195,7 @@ class AngularJSLibrary:
 
         try:
             WebDriverWait(self._s2l._current_browser(), timeout, 0.2)\
-                .until_not(lambda x: self._s2l._current_browser().execute_script(js_wait_for_angular))
+                .until_not(lambda x: self._s2l._current_browser().execute_script(js_wait_for_angular, self.root_selector))
         except TimeoutException:
             pass
             #if self.trackOutstandingTimeouts:
