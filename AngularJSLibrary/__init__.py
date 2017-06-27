@@ -179,6 +179,8 @@ class AngularJSLibrary:
         # Add Angular specific locator strategies
         self._s2l.add_location_strategy('ng-binding', self._find_by_binding, persist=True)
         self._s2l.add_location_strategy('binding', self._find_by_binding, persist=True)
+        self._s2l.add_location_strategy('ng-click', self._find_by_click, persist=True)
+        self._s2l.add_location_strategy('click', self._find_by_click, persist=True)
         self._s2l.add_location_strategy('ng-model', self._find_by_model, persist=True)
         self._s2l.add_location_strategy('model', self._find_by_model, persist=True)
         self._s2l.add_location_strategy('ng-repeater', self._find_by_ng_repeater, persist=True)
@@ -236,6 +238,15 @@ class AngularJSLibrary:
             }
             return matches;
         """ % criteria)
+
+    def _find_by_click(self, browser, criteria, tag, constraints):
+        prefixes = ['ng-', 'ng_', 'data-ng-', 'x-ng-']#, 'ng\\:']
+        for prefix in prefixes:
+            selector = '[%click="%s"]' % (prefix, criteria)
+            elements = browser.execute_script("""return document.querySelectorAll('%s');""" % selector);
+            if len(elements):
+                return ElementFinder()._filter_elements(elements, tag, constraints)
+        raise ValueError("Element locator '" + criteria + "' did not match any elements.")
 
     def _find_by_model(self, browser, criteria, tag, constraints):
         prefixes = ['ng-', 'ng_', 'data-ng-', 'x-ng-']#, 'ng\\:']
