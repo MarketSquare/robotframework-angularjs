@@ -86,9 +86,10 @@ def is_boolean(item):
     return isinstance(item,bool)
 
 class ngElementFinder(ElementFinder):
-    def __init__(self, root_selector, ignore_implicit_angular_wait=False):
+    def __init__(self, root_selector, implicit_angular_wait, ignore_implicit_angular_wait=False):
         super(ngElementFinder, self).__init__()
         self.root_selector = root_selector
+        self._implicit_angular_wait_in_secs = implicit_angular_wait
         self.ignore_implicit_angular_wait = ignore_implicit_angular_wait
 
     def find(self, browser, locator, tag=None):
@@ -172,7 +173,9 @@ class AngularJSLibrary:
             self.root_selector = '[ng-app]'
         else:
             self.root_selector = root_selector
-            
+
+        self._implicit_angular_wait_in_secs = timestr_to_secs(implicit_angular_wait)
+        
         # Override default locators to include binding {{ }}
         self._s2l._element_finder = ngElementFinder(self.root_selector, ignore_implicit_angular_wait)
 
@@ -215,6 +218,15 @@ class AngularJSLibrary:
 
         self._s2l._element_finder.ignore_implicit_angular_wait = ignore
 
+    def get_implicit_angular_wait(self):
+        return robot.utils.secs_to_timestr(self._implicit_angular_wait_in_secs)
+
+    def set_implicit_angular_wait(self, seconds):
+        old_wait = self.get_implicit_angular_wait()
+        self._implicit_angular_wait_in_secs = robot.utils.timestr_to_secs(seconds)
+        self._s2l._element_finder._implicit_angular_wait_in_secs = self._implicit_angular_wait_in_secs
+        return old_wait
+    
     # Locators
 
     def _find_by_binding(self, browser, criteria, tag, constrains):
