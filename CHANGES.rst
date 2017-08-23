@@ -2,6 +2,10 @@ Changelog
 =========
 0.0.7 (unreleased)
 ------------------
+Fixes:
+
+- [Minor] Corrected error message.
+  [emanlove]
 
 0.0.6 (2017-06-12)
 ------------------

@@ -193,7 +193,7 @@ class AngularJSLibrary:
         # Determine timeout and error
         timeout = timeout or self._s2l.get_selenium_timeout()
         timeout = timestr_to_secs(timeout)
-        error = error or ('Timed out waiting for Protractor to synchronize with ' +
+        error = error or ('Timed out waiting for AngularJSLibrary to synchronize with ' +
                          'the page after specified timeout.')
 
         try:
