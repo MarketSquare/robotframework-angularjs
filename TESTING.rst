@@ -575,6 +575,198 @@ which one could compared with the full Protractor code
 
 The biggest difference is the simplification of the Angular 1 code. I could simply add the window.angular.getTestability check. For now I am going to move forward with this and then we can revisit this code.
 
+Execute Async vs Sync Script
+----------------------------
+
+So I am coming around to revisiting my decision to use the syncronous javascript call. Reviewing my reasons again was 1) it worked - that is, syncronous worked where my initial attempts with asycronous failed and then 2) I wanted to control loop (i.e. the eventual timeout) to be within Python and 3) I understood what it was doing and, well, it worked. As previously noted I grasped the basic concept of asycronous javascript but I couldn't envision it from the Python call side nor was I fully understanding the implementation of the callback. Since then several events are pushing me forward with, at least, trying out an asyncronous version. Those events include a good conversation with the very wise Marvin Ojwang at the spring 2017 Selenium Conference and some issues I have had with an in-house Angluar sites. Also I have been thinking about the python async call and think I have a better understanding as well as a way of actually showing the async call work with python.
+
+For the async demo I need as the core a Javascript "sleep" command. I am using the solution provide by Dan Dascalescu `in this stackoverflow posting<https://stackoverflow.com/questions/951021/what-is-the-javascript-version-of-sleep>`_. Note this will work for latest version of Edge, Firefox, and Chrome but not IE11. Also note if you run this within the developer tools (F12) console you will not get the console.log output. I must admit this is both frustrating and, although technical correct, absolutly wrong and useless. If someone wants to log let them log whether from within the console itself or from an internal script or even a selenium execute script call. That sai here is the javascript
+
+.. code ::  javascript
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    
+    async function demo() {
+      console.log('Taking a break...');
+      await sleep(2000);
+      console.log('Two second later');
+    }
+    
+    demo();
+
+If you really want to run this in the console window you can change console.log to alert. Just remember that you need to dismiss the alert dialog to complete the initial 'Taking a call...' statement and have the script procede. As we really want to work within Python let's move this there...
+
+.. code :: pycon
+
+    >>> from selenium import webdriver
+    >>> driver = webdriver.Firefox()
+    >>> js="""function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
+    ... async function demo(){console.log('Taking a break...');await sleep(2000);console.log('Two second later')}
+    ... demo()"""
+    >>> driver.execute_script(js)
+    >>> 
+
+Now I know this is not the form I want to create for an asyncronous call but let's try this out anyways and see what happens...
+
+.. code :: pycon
+
+    >>> driver.execute_async_script(js)
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+      File "/home/emanlove/angular/clean-python27-env/local/lib/python2.7/site-packages/selenium/webdriver/remote/webdriver.py", line 553, in execute_async_script
+        'args': converted_args})['value']
+      File "/home/emanlove/angular/clean-python27-env/local/lib/python2.7/site-packages/selenium/webdriver/remote/webdriver.py", line 297, in execute
+        self.error_handler.check_response(response)
+      File "/home/emanlove/angular/clean-python27-env/local/lib/python2.7/site-packages/selenium/webdriver/remote/errorhandler.py", line 194, in check_response
+        raise exception_class(message, screen, stacktrace)
+    selenium.common.exceptions.TimeoutException: Message: Timed out
+    
+    >>>
+
+Well it works and then ... we seemingly don't return from the method .. till we get the Timed out message. Ok this is good for a couple reasons. One it should be expected as, first, there is no return (and no callback) and second I need to eventually work out and explain how an internal library timeout interacts with the selenium timeouts. So this is confirmation and a reminder. For kicks and curiosity I am going to try a return value. I'll note I really think the issue with the async script is not the lack of a return value but the missing callback. Changing the script to
+
+.. code :: pycon
+
+    >>> js_w_return="""function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
+    ... async function demo(){console.log('Taking a break...');await sleep(2000);console.log('Two second later')}
+    ... demo();
+    ... return undefined;"""
+    >>> val=driver.execute_script(js_w_return)
+    >>> val is None
+    True
+    >>> driver.execute_async_script(js_w_return)
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+      File "/home/emanlove/angular/clean-python27-env/local/lib/python2.7/site-packages/selenium/webdriver/remote/webdriver.py", line 553, in execute_async_script
+        'args': converted_args})['value']
+      File "/home/emanlove/angular/clean-python27-env/local/lib/python2.7/site-packages/selenium/webdriver/remote/webdriver.py", line 297, in execute
+        self.error_handler.check_response(response)
+      File "/home/emanlove/angular/clean-python27-env/local/lib/python2.7/site-packages/selenium/webdriver/remote/errorhandler.py", line 194, in check_response
+        raise exception_class(message, screen, stacktrace)
+    selenium.common.exceptions.TimeoutException: Message: Timed out
+    
+    >>>
+
+A few observations. The return value had no effect on the async call. Also, not noticed before nor called out but the sync script returns immediately while the script is still running within the test browser. Yes expected, but still interesting none the less. The last observation was that undefined value in Javascript translates to None within Python. I hadn't really thought about this till I didn't see a return value which I'll admit was a little unexpected here. I wanted to confirm I got a return value and the python interpretor on return None does "nothing". I modified the script to return a Javascript false instead,
+
+.. code :: python
+
+    js_w_bool="""function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
+    async function demo(){console.log('Taking a break...');await sleep(2000);console.log('Two second later')}
+    demo();
+    return false;"""
+
+saw False return value, and then went back and tested the undefined val against None. Minor observation but still important in confirming my understanding and observations.
+
+Thinking I recalled that the last arguement is supposed to be the callback function which will be called when the async javascript script is completed, I tried something like
+
+.. code :: pycon
+
+    >>> js="""function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
+    ... async function demo(){console.log('Taking a break...');await sleep(2000);console.log('Two second later')}
+    ... demo();"""
+    >>> val=driver.execute_script(js,"console.log(); return undefined;")
+
+But providing what I thought was the callback function didn't work so I went back to the Selenium unit tests. Here we see, as an example, this async call
+
+.. code :: pycon
+
+    >>> driver.execute_async_script("arguments[arguments.length - 1](123);")
+    123
+
+noting that this function returns without the time exception which will be noteworthy here shortly. Trying to resolve where my thinking about execute_async_script came from I re-disovered `this stackoverflow post<https://stackoverflow.com/a/29520344>`_ which i think was the source for my statement "the last arguement is supposed to be the callback function which will be called when the async javascript script is completed". Honestly, re-reading this post just confuses me again. So I have a basic understanding as arguments and we actually use them in the library because certain characters cause issues within a script and pone solution is to pass them as arguments. Wanting to understand this beeter and thinking about the selenium unit test above I tried the following
+
+.. code :: pycon
+
+    >>> driver.execute_async_script("console.log(arguments.length)")
+    1
+    >>> driver.execute_async_script("console.log(arguments[0])")
+    function ()
+    >>> driver.execute_async_script("console.log(arguments[0].toSource())")
+    rv => __webDriverCallback(rv)
+    >>> driver.execute_async_script("console.log(arguments[0].toString())")
+    rv => __webDriverCallback(rv)
+    >>> 
+
+All of these timed out, by the way which was surprising and interesting. Also the response for the toSouce/toDString function is interesting. What gets me confused about the stackflow article is that I have been thinking of the execute_async_script as the javascript function which may be incorrect. The arguments, the javascript scripts that are been passed into the python method, are not going into a execute_async_script function but may be run within some other function. Trying
+
+.. code :: pycon
+
+    >>> driver.execute_async_script("var funcName=arguments.callee.toString(); console.log(funcName)")
+
+results in the following console output
+
+.. code
+
+   function() { var funcName=arguments.callee.toString(); console.log(funcName) }
+
+This just re-enforces my confusion. "Without an additional argument passed to the python execute_async_script method, Argument[0] is the javascript function itself one wishes to execute. Thus statements like driver.execute_async_script("arguments[arguments.length - 1](123);") are just some sort of bad circlular function call."
+
+Funny. As I explore this more I tried the following
+
+.. code :: pycon
+
+    >>> driver.execute_async_script("var funcName=arguments[0].callee.toString(); console.log(funcName)")
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+      File "/home/emanlove/angular/clean-python27-env/local/lib/python2.7/site-packages/selenium/webdriver/remote/webdriver.py", line 553, in execute_async_script
+        'args': converted_args})['value']
+      File "/home/emanlove/angular/clean-python27-env/local/lib/python2.7/site-packages/selenium/webdriver/remote/webdriver.py", line 297, in execute
+        self.error_handler.check_response(response)
+      File "/home/emanlove/angular/clean-python27-env/local/lib/python2.7/site-packages/selenium/webdriver/remote/errorhandler.py", line 194, in check_response
+        raise exception_class(message, screen, stacktrace)
+    selenium.common.exceptions.WebDriverException: Message: TypeError: arguments[0].callee is undefined
+    
+    >>> driver.execute_async_script("var funcName=arguments[0]().callee.toString(); console.log(funcName)")
+    >>> 
+
+The first call above throws an error, as expected, because callee is not is not a function of the first agrument but of arguments. Arguments[0](), on the other hand, is a function and thus should have the callee child object. But when we make this second call the function returns without a timeout and the console log has no output. See a bad recursive function call!
+
+I had a chance to walk away an forget about this question for a short time. Coming back I am asking whether I can essentially fit the async example into the javascript sleep example. Here is code that says yes we can,
+
+.. code :: pycon
+
+    >>> from selenium import webdriver
+    >>> driver=webdriver.Firefox()
+    >>> js="""var done = arguments[0];
+    ... function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
+    ... async function demo(){console.log('Taking a break...');await sleep(2000);done('Two second later')}
+    ... demo()"""
+    >>> driver.execute_async_script(js)
+    u'Two second later'
+    >>> 
+
+Jumping over to our specific goal of asking Angular whether or not it is "busy", trying ...
+
+.. code :: pycon
+
+    >>> from selenium import webdriver
+    >>> driver=webdriver.Firefox()
+    >>> driver.get("http://angular.github.io/angular-phonecat/step-14/app/#!/phones")
+    >>> js_wait_for_angularjs = """
+    ...     var callback = arguments[0];
+    ...     var el = document.querySelector('[ng-app]');
+    ...     if (typeof angular.element(el).injector() == "undefined") {
+    ...         throw new Error('root element ([ng-app]) has no injector.' +
+    ...                ' this may mean it is not inside ng-app.');
+    ...     }
+    ...     angular.element(el).injector().get('$browser').
+    ...                 notifyWhenNoOutstandingRequests(callback);
+    ... """
+    >>> driver.execute_async_script(js_wait_for_angularjs)
+    >>> el=driver.find_elements_by_xpath("//select")[0]
+    >>> sel=webdriver.support.select.Select(el)
+    >>> sel.select_by_value('age');driver.execute_async_script(js_wait_for_angularjs);
+    >>> sel.select_by_value('name');driver.execute_async_script(js_wait_for_angularjs);
+    >>> sel.select_by_value('age');driver.execute_async_script(js_wait_for_angularjs);
+    >>> 
+
+These last few lines give us a very unscientific but visual sanity check making sure that we are indeed waiting for angular to complete.
+
+[... more to come... Need to implement an all javascript version wait for angular up to some give up timeout. Also want to talk the merits of both async and sync solutions and demostrate a very busy angular/javascript test case and show what happens when a blocking call is made.]
+
 Footnotes
 ---------
 
