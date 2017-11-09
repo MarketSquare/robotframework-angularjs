@@ -767,6 +767,9 @@ These last few lines give us a very unscientific but visual sanity check making 
 
 [... more to come... Need to implement an all javascript version wait for angular up to some give up timeout. Also want to talk the merits of both async and sync solutions and demostrate a very busy angular/javascript test case and show what happens when a blocking call is made.]
 
+One question I have is with the model above can we send back some value in the sense that we are not wanting to call the arguments[0](some_return_var) function but instead pass it as the callback and when the notifyWhenNoOutstandingRequests function completes then call the callback and return the value.
+
+
 Footnotes
 ---------
 
