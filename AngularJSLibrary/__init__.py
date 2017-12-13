@@ -93,8 +93,7 @@ class ngElementFinder(ElementFinder):
         self.ignore_implicit_angular_wait = ignore_implicit_angular_wait
 
     def find(self, browser, locator, tag=None):
-        timeout = self._s2l.get_selenium_timeout()
-        timeout = timestr_to_secs(timeout)
+        timeout = self._implicit_angular_wait_in_secs
 
         if not self.ignore_implicit_angular_wait:
             try:
@@ -194,13 +193,16 @@ class AngularJSLibrary:
     def wait_for_angular(self, timeout=None, error=None):
 
         # Determine timeout and error
-        timeout = timeout or self._s2l.get_selenium_timeout()
-        timeout = timestr_to_secs(timeout)
+        if timeout:
+            timeoutSecs = timestr_to_secs(timeout)
+        else:
+            timeoutSecs = self._implicit_angular_wait_in_secs
+
         error = error or ('Timed out waiting for Protractor to synchronize with ' +
                          'the page after specified timeout.')
 
         try:
-            WebDriverWait(self._s2l._current_browser(), timeout, 0.2)\
+            WebDriverWait(self._s2l._current_browser(), timeoutSecs, 0.2)\
                 .until_not(lambda x: self._s2l._current_browser().execute_script(js_wait_for_angular, self.root_selector))
         except TimeoutException:
             pass
@@ -209,7 +211,7 @@ class AngularJSLibrary:
             #    logger.debug(timeouts)
             #pendingHttps = self._exec_js(js_get_pending_http_requests)
             #logger.debug(pendingHttps)
-            #raise TimeoutException(error)
+            raise TimeoutException(error)
 
     def set_ignore_implicit_angular_wait(self, ignore):
         if not is_boolean(ignore):
@@ -277,7 +279,7 @@ class AngularJSLibrary:
     # Helper Methods
 
     def _exec_js(self, code):
-            return self._s2l._current_browser().execute_script(code)
+        return self._s2l._current_browser().execute_script(code)
 
     def _parse_ng_repeat_locator(self, criteria):
         def _startswith(str,sep):
