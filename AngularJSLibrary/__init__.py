@@ -3,7 +3,7 @@ from robot.libraries.BuiltIn import BuiltIn
 from robot.utils import timestr_to_secs
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
-from Selenium2Library.locators import ElementFinder
+from SeleniumLibrary.locators import ElementFinder
 
 import time
 
@@ -87,11 +87,13 @@ def is_boolean(item):
 
 class ngElementFinder(ElementFinder):
     def __init__(self, root_selector, ignore_implicit_angular_wait=False):
-        super(ngElementFinder, self).__init__()
+        super(ngElementFinder, self).__init__(self._s2l)
         self.root_selector = root_selector
         self.ignore_implicit_angular_wait = ignore_implicit_angular_wait
 
-    def find(self, browser, locator, tag=None):
+    #def find(self, browser, locator, tag=None):
+    def find(self, locator, tag=None, first_only=True, required=True,
+             parent=None):
         timeout = self._s2l.get_selenium_timeout()
         timeout = timestr_to_secs(timeout)
 
@@ -101,8 +103,9 @@ class ngElementFinder(ElementFinder):
                     .until_not(lambda x: self._s2l._current_browser().execute_script(js_wait_for_angular, self.root_selector))
             except TimeoutException:
                 pass
-        strategy = ElementFinder.find(self, browser, locator, tag=None)
-        return strategy
+        elements = ElementFinder.find(self, locator, tag, first_only, required,
+             parent)
+        return elements
 
     def _find_by_default(self, browser, criteria, tag, constraints):
         if criteria.startswith('//'):
@@ -134,7 +137,7 @@ class ngElementFinder(ElementFinder):
 
     @property
     def _s2l(self):
-        return BuiltIn().get_library_instance('Selenium2Library')
+        return BuiltIn().get_library_instance('SeleniumLibrary')
 
 class AngularJSLibrary:
 
@@ -346,4 +349,4 @@ class AngularJSLibrary:
 
     @property
     def _s2l(self):
-        return BuiltIn().get_library_instance('Selenium2Library')
+        return BuiltIn().get_library_instance('SeleniumLibrary')
