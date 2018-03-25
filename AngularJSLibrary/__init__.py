@@ -91,7 +91,6 @@ class ngElementFinder(ElementFinder):
         self.root_selector = root_selector
         self.ignore_implicit_angular_wait = ignore_implicit_angular_wait
 
-    #def find(self, browser, locator, tag=None):
     def find(self, locator, tag=None, first_only=True, required=True,
              parent=None):
         timeout = self._s2l.get_selenium_timeout()
@@ -107,16 +106,15 @@ class ngElementFinder(ElementFinder):
              parent)
         return elements
 
-    def _find_by_default(self, browser, criteria, tag, constraints):
-        if criteria.startswith('//'):
-            return self._s2l._element_finder._find_by_xpath(browser, criteria, tag, constraints)
-        elif criteria.startswith('{{'):
+    def _find_by_default(self, criteria, tag, constraints, parent):
+        if criteria.startswith('{{'):
             criteria = stripcurly(criteria)
-            return self._find_by_binding(browser, criteria, tag, constraints)
-        return self._find_by_key_attrs(browser, criteria, tag, constraints)
+            return self._find_by_binding(criteria, tag, constraints, parent)
+        else:
+             ElementFinder._find_by_default(self, criteria, tag, constraints, parent)
 
-    def _find_by_binding(self, browser, criteria, tag, constraints):
-        return browser.execute_script("""
+    def _find_by_binding(self, criteria, tag, constraints, parent):
+        return self._s2l._current_browser().execute_script("""
             var binding = '%s';
             var bindings = document.getElementsByClassName('ng-binding');
             var matches = [];
@@ -221,7 +219,7 @@ class AngularJSLibrary:
     # Locators
 
     def _find_by_binding(self, browser, criteria, tag, constrains):
-        return browser.execute_script("""
+        return self._s2l._current_browser().execute_script("""
             var binding = '%s';
             var bindings = document.getElementsByClassName('ng-binding');
             var matches = [];
@@ -240,27 +238,27 @@ class AngularJSLibrary:
             return matches;
         """ % criteria)
 
-    def _find_by_model(self, browser, criteria, tag, constraints):
+    def _find_by_model(self, parent, criteria, tag, constraints):
         prefixes = ['ng-', 'ng_', 'data-ng-', 'x-ng-']#, 'ng\\:']
         for prefix in prefixes:
             selector = '[%smodel="%s"]' % (prefix, criteria)
-            elements = browser.execute_script("""return document.querySelectorAll('%s');""" % selector);
+            elements = self._s2l._current_browser().execute_script("""return document.querySelectorAll('%s');""" % selector);
             if len(elements):
-                return ElementFinder()._filter_elements(elements, tag, constraints)
+                return ElementFinder(self._s2l)._filter_elements(elements, tag, constraints)
         raise ValueError("Element locator '" + criteria + "' did not match any elements.")
 
-    def _find_by_ng_repeater(self, browser, criteria, tag, constraints):
+    def _find_by_ng_repeater(self, parent, criteria, tag, constraints):
         repeater_row_col = self._parse_ng_repeat_locator(criteria)
 
         js_repeater_str = self._reconstruct_js_locator(repeater_row_col)
-        elements = browser.execute_script(
+        elements = self._s2l._current_browser().execute_script(
             js_repeater_min +
             """var ng_repeat = new byRepeaterInner(true);""" +
             """return ng_repeat%s.getElements();""" % (js_repeater_str),
             arg0, arg1
         );
         if len(elements):
-            return ElementFinder()._filter_elements(elements, tag, constraints)
+            return ElementFinder(self._s2l)._filter_elements(elements, tag, constraints)
         else:
             raise ValueError("Element locator '" + criteria + "' did not match any elements.")
 
