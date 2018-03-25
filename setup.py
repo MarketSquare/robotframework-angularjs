@@ -34,5 +34,5 @@ setup(
     ],
     keywords='robotframework testing testautomation angular selenium webdriver',
     packages=find_packages(exclude=['docs']),
-    install_requires=['robotframework', 'robotframework-selenium2library'],
+    install_requires=['robotframework', 'robotframework-seleniumlibrary'],
 )
