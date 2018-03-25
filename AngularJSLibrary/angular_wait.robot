@@ -5,6 +5,7 @@ Library         AngularJSLibrary
 
 *** Test Cases ***
 Waits For Http Calls
+    [Documentation]  `Wait For Angular` should delay for 2 seconds.
     Wait For Angular
     Element Text Should Be  binding=slowHttpStatus  not started
 
@@ -14,6 +15,8 @@ Waits For Http Calls
     Element Text Should Be  binding=slowHttpStatus  done
 
 Waits For Long Javascript Execution
+    [Documentation]  This test will take variable amount of time but should not
+    ...    take more than about five seconds.
     Wait For Angular
     Element Text Should Be  binding=slowFunctionStatus  not started
 
@@ -23,6 +26,8 @@ Waits For Long Javascript Execution
     Element Text Should Be  binding=slowFunctionStatus  done
 
 DOES NOT wait for timeout
+    [Documentation]  The `Wait For Angular` keyword should return immediately
+    ...    and not wait for a javascript timeout.
     Wait For Angular
     Element Text Should Be  binding=slowTimeoutStatus  not started
 
@@ -32,6 +37,7 @@ DOES NOT wait for timeout
     Element Text Should Be  binding=slowTimeoutStatus  pending...
 
 Waits For $timeout
+    [Documentation]  Test should take around 4 seconds.
     Wait For Angular
     Element Text Should Be  binding=slowAngularTimeoutStatus  not started
 
@@ -41,6 +47,7 @@ Waits For $timeout
     Element Text Should Be  binding=slowAngularTimeoutStatus  done
     
 Waits For $timeout Then A Promise
+    [Documentation]  Test should take around 4 seconds.
     Wait For Angular
     Element Text Should Be  binding=slowAngularTimeoutPromiseStatus  not started
 
@@ -50,6 +57,7 @@ Waits For $timeout Then A Promise
     Element Text Should Be  binding=slowAngularTimeoutPromiseStatus  done
     
 Waits For Long Http Call Then A Promise
+    [Documentation]  `Wait For Angular` should delay for 2 seconds.
     Wait For Angular
     Element Text Should Be  binding=slowHttpPromiseStatus  not started
 

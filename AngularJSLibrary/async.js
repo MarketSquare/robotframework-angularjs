@@ -40,7 +40,7 @@ function AsyncCtrl($scope, $http, $timeout, $location) {
     $timeout(function() {
       $scope.slowAngularTimeoutStatus = 'done';
       $scope.slowAngularTimeoutCompleted = true;
-    }, 5000);
+    }, 4000);
   };
 
   $scope.slowAngularTimeoutHideButton = function() {
@@ -51,7 +51,7 @@ function AsyncCtrl($scope, $http, $timeout, $location) {
     $scope.slowAngularTimeoutPromiseStatus = 'pending...';
     $timeout(function() {
       // intentionally empty
-    }, 5000).then(function() {
+    }, 4000).then(function() {
       $scope.slowAngularTimeoutPromiseStatus = 'done';
       $scope.slowAngularTimeoutPromiseCompleted = true;
     });
@@ -86,3 +86,11 @@ function AsyncCtrl($scope, $http, $timeout, $location) {
 }
 
 AsyncCtrl.$inject = ['$scope', '$http', '$timeout', '$location'];
+
+angular.module('myApp.appVersion', []).
+  value('version', '0.1-robotframework-angularjs-031618').
+  directive('appVersion', ['version', function(version) {
+    return function(scope, elm, attrs) {
+      elm.text(version);
+    };
+  }]);
