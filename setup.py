@@ -20,6 +20,7 @@ setup(
     version='0.0.8dev1',
     description="""An AngularJS extension to Robotframework's Selenium2Library""",
     long_description=long_description,
+    long_description_content_type='text/x-rst',
     url='https://github.com/Selenium2Library/robotframework-angularjs',
     author='Zephraph, Ed Manlove',
     author_email='zephraph@gmail.com, devPyPlTw@verizon.net',
