@@ -37,3 +37,33 @@ been made, one can use
     git tag -a v0.0.5 -m "0.0.5 release" <commit>
 
 to tag a specified commit.
+
+Current Steps to Setup Development Environment and Run Tests
+------------------------------------------------------------
+Here are the current (as of Aug. 3, 2018, selenium==3.14.0, robotframework-seleniumlibrary==3.2.0.dev1, protractor==5.4.0) instructions for setting up the development environment and running the tests
+
+.. code::  bash
+
+    mkdir locator
+    cd locator/
+    git clone https://github.com/robotframework/SeleniumLibrary.git rf-sl
+    git clone https://github.com/Selenium2Library/robotframework-angularjs.git rf-ng
+    git clone https://github.com/angular/protractor.git ptor
+    
+    virtualenv -p /usr/bin/python2.7 --no-site-packages cl-py27-env
+    source cl-py27-env/bin/activate
+    pip install robotframework robotstatuschecker mockito selenium
+    
+    patch rf-sl/atest/resources/testserver/testserver.py rf-ng/AngularJSLibrary/testserver.py.patch 
+    
+    cp -R ptor/testapp rf-sl/atest/resources/.
+    
+    cp rf-ng/AngularJSLibrary/async.html rf-sl/atest/resources/testapp/ng1/async/.
+    cp rf-ng/AngularJSLibrary/async.js rf-sl/atest/resources/testapp/ng1/async/.
+    
+    cp rf-ng/AngularJSLibrary/angular.robot rf-sl/atest/acceptance/locators/.
+    cp rf-ng/AngularJSLibrary/angular_wait.robot rf-sl/atest/acceptance/keywords/.
+    
+    cd rf-sl
+    python atest/run.py FF --suite angular --pythonpath ../rf-ng
+

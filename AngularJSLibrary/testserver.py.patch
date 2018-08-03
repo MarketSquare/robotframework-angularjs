@@ -1,0 +1,49 @@
+diff --git a/atest/resources/testserver/testserver.py b/atest/resources/testserver/testserver.py
+index 19e82ef..cf2abf1 100644
+--- a/atest/resources/testserver/testserver.py
++++ b/atest/resources/testserver/testserver.py
+@@ -5,6 +5,7 @@ from __future__ import print_function
+ 
+ import os
+ import sys
++from time import sleep
+ try:
+     from httplib import HTTPConnection
+     from BaseHTTPServer import HTTPServer
+@@ -28,6 +29,36 @@ class StoppableHttpRequestHandler(SimpleHTTPRequestHandler):
+     def do_POST(self):
+         self.do_GET()
+ 
++    def do_GET(self):
++        """Response pages for Angular tests.
++        
++        Added by Edward Manlove - June 5, 2014
++        """
++        if self.path.endswith('/fastcall'):
++            self.send_response(200)
++            self.send_header('Content-type', 'text/html')
++            self.end_headers()
++            self.wfile.write('done')
++        elif self.path.endswith('/slowcall'):
++            sleep(2)
++            self.send_response(200)
++            self.send_header('Content-type', 'text/html')
++            self.end_headers()
++            self.wfile.write('finally done')
++        elif self.path.endswith('/fastTemplateUrl'):
++            self.send_response(200)
++            self.send_header('Content-type', 'text/html')
++            self.end_headers()
++            self.wfile.write('fast template contents')
++        elif self.path.endswith('/slowTemplateUrl'):
++            sleep(2)
++            self.send_response(200)
++            self.send_header('Content-type', 'text/html')
++            self.end_headers()
++            self.wfile.write('slow template contents')
++        else:
++            SimpleHTTPRequestHandler.do_GET(self)
++
+ 
+ class ThreadingHttpServer(ThreadingMixIn, HTTPServer):
+     pass
