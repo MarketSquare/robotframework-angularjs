@@ -1,13 +1,13 @@
 Changelog
 =========
-0.0.8 (unreleased)
+0.0.8 (2018-08-03)
 ------------------
 Fixes:
 
 - Fixed issue when no locator strategy was specified.
   [emanlove]
 
-0.0.7 (2017-03-31)
+0.0.7 (2018-03-31)
 ------------------
 Changes:
 
