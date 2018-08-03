@@ -1,7 +1,19 @@
 Changelog
 =========
-0.0.7 (unreleased)
+0.0.8 (unreleased)
 ------------------
+Fixes:
+
+- Fixed issue when no locator strategy was specified.
+  [emanlove]
+
+0.0.7 (2017-03-31)
+------------------
+Changes:
+
+- Added support for SeleniumLibrary and dropped support for Selenium2Library.
+  [emanlove]
+
 Fixes:
 
 - [Minor] Corrected error message.
