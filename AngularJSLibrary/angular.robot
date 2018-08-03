@@ -183,7 +183,14 @@ Should Return All Elements When Unmodified
    [Setup]  Start ng-repeat Test
    Locator Should Match X Times  repeater=bloop in days    15
 
+Should Locate Element Using Default Strategy
+   Click Element  disabledButton
 
+Should Locate Element Using id= Strategy
+   Click Element  id=disabledButton
+
+Should Locate Element Using id: Strategy
+   Click Element  id:disabledButton
 
 *** Keywords ***
 Start Angular Test
