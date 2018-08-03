@@ -111,7 +111,7 @@ class ngElementFinder(ElementFinder):
             criteria = stripcurly(criteria)
             return self._find_by_binding(criteria, tag, constraints, parent)
         else:
-             ElementFinder._find_by_default(self, criteria, tag, constraints, parent)
+            return ElementFinder._find_by_default(self, criteria, tag, constraints, parent)
 
     def _find_by_binding(self, criteria, tag, constraints, parent):
         return self._s2l._current_browser().execute_script("""
