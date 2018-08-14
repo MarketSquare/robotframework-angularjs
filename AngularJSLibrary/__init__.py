@@ -135,7 +135,7 @@ class ngElementFinder(ElementFinder):
 
     @property
     def _s2l(self):
-        return BuiltIn().get_library_instance('SeleniumLibrary')
+        return BuiltIn().get_library_instance('Selenium2Library')
 
 class AngularJSLibrary:
 
@@ -347,4 +347,4 @@ class AngularJSLibrary:
 
     @property
     def _s2l(self):
-        return BuiltIn().get_library_instance('SeleniumLibrary')
+        return BuiltIn().get_library_instance('Selenium2Library')
