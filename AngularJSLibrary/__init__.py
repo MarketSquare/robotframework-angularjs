@@ -1,5 +1,5 @@
 from robot.api import logger
-from robot.libraries.BuiltIn import BuiltIn
+from robot.libraries.BuiltIn import BuiltIn, RobotNotRunningError
 from robot.utils import timestr_to_secs
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
@@ -135,7 +135,11 @@ class ngElementFinder(ElementFinder):
 
     @property
     def _s2l(self):
-        return BuiltIn().get_library_instance('SeleniumLibrary')
+        try:
+            return BuiltIn().get_library_instance('SeleniumLibrary')
+        except RobotNotRunningError:
+            from SeleniumLibrary import SeleniumLibrary
+            return SeleniumLibrary()
 
 class AngularJSLibrary:
 
@@ -347,4 +351,8 @@ class AngularJSLibrary:
 
     @property
     def _s2l(self):
-        return BuiltIn().get_library_instance('SeleniumLibrary')
+        try:
+            return BuiltIn().get_library_instance('SeleniumLibrary')
+        except RobotNotRunningError:
+            from SeleniumLibrary import SeleniumLibrary
+            return SeleniumLibrary()

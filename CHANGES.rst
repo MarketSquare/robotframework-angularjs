@@ -2,6 +2,10 @@ Changelog
 =========
 0.0.9 (unreleased)
 ------------------
+Fixes:
+
+- Fixed issue when importing library into RIDE.
+  [pekkaklarck][emanlove]
 
 0.0.8 (2018-08-03)
 ------------------
