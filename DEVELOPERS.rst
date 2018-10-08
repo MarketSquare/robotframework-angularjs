@@ -67,3 +67,29 @@ Here are the current (as of Aug. 3, 2018, selenium==3.14.0, robotframework-selen
     cd rf-sl
     python atest/run.py FF --suite angular --pythonpath ../rf-ng
 
+or if you are using Windows
+
+.. code::  bat
+
+    mkdir enable-wait
+    cd enable-wait
+    
+    git clone https://github.com/robotframework/SeleniumLibrary.git rf-sl
+    git clone https://github.com/Selenium2Library/robotframework-angularjs.git rf-ng
+    git clone https://github.com/angular/protractor.git ptor
+    
+    virtualenv -p C:\Python27\python.exe --no-site-packages cl-py27-env
+    cl-py27-env\Scripts\activate
+    
+    pip install robotframework robotstatuschecker mockito selenium
+    
+    REM There is no default patch command under MS Dos so this step needs
+    REM to be manually implemented.
+    REM patch rf-sl/atest/resources/testserver/testserver.py rf-ng/AngularJSLibrary/testserver.py.patch 
+    
+    xcopy ptor\testapp rf-sl\atest\resources\testapp\ /E /Y /F
+    copy /Y rf-ng\AngularJSLibrary\async.html rf-sl\atest\resources\testapp\ng1\async\.
+    copy /Y rf-ng\AngularJSLibrary\async.html rf-sl\atest\resources\testapp\ng1\async\.
+    copy rf-ng\AngularJSLibrary\angular.robot rf-sl\atest\acceptance\locators\.
+    copy rf-ng\AngularJSLibrary\angular_wait.robot rf-sl\atest\acceptance\keywords\.
+
