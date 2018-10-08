@@ -71,8 +71,8 @@ or if you are using Windows
 
 .. code::  bat
 
-    mkdir enable-wait
-    cd enable-wait
+    mkdir test-ng
+    cd test-ng
     
     git clone https://github.com/robotframework/SeleniumLibrary.git rf-sl
     git clone https://github.com/Selenium2Library/robotframework-angularjs.git rf-ng
