@@ -2,15 +2,15 @@ AngularJSLibrary - robotframework-angularjs
 ===========================================
 An AngularJS and Angular extension to Robotframework's SeleniumLibrary
 
-What is included
-----------------
-AngularJSLibrary provides keywords for finding elements by binding, model, and repeater. The library also provides both an explicit keyword for waiting on angular and an implicit wait.
-
 About the support for various Angular and Selenium Library versions
 -------------------------------------------------------------------
 As of AngularJSLibrary version 0.0.7 (31 March, 2018 release) only the SeleniumLibrary is supported (despite the name of the GITHUB group hosting the library).
 
 The AngularJSLibrary, despite the name including JS, supports both Angular 2.0+ (known as simply Angular) and Angular 1.0 (also known as Angular JS).
+
+What is included
+----------------
+AngularJSLibrary provides functionality in two key areas: angular specific **locator strategies** and **waiting**. Just as there are strategies provide by the SeleniumLibrary for locating elements by ID, CSS, or xPath, this library adds startegies for finding elements by binding, model, and repeater. The library also provides both an explicit keyword for waiting on angular and an implicit wait.
 
 Installation
 ------------
@@ -28,10 +28,7 @@ Alternatively, to install from source:
     python setup.py install
 
     
-
-Keyword Usage
--------------
-In order to use the keywords you have to include AngularJSLibrary in the settings section of your test. Note will will need to include the SeleniumLibrary **before** you import the AngularJSLibrary.
+In order to use the keywords you have to include AngularJSLibrary in the settings section of your test or test suite. Note will will need to include the SeleniumLibrary **before** you import the AngularJSLibrary.
 
 .. code::  robotframework
 
@@ -46,6 +43,21 @@ In order to use the keywords you have to include AngularJSLibrary in the setting
     ...
 
 
+Keyword Documentation
+---------------------
+The keyword documentation can be found on the `Github project page<http://selenium2library.github.io/robotframework-angularjs/>`_.
+
+Usage of the Waiting functionality
+----------------------------------
+The AngularJS Library provides two types of waiting; a explicit keyword that one calls out or writes into their script and then an built-in implicit wait that automatically waits when using a locator strategy. Note currently the implicit wait is not invoked when using a web element as the locator. By default the implicit is turned on. This means as soon as you import the library you will have waiting enabled.
+
+You may turn off the implicit wait by either using the `Set Ignore Implicit Angular Wait` keyword with an argument of `${True}` or when importing the library. For some testing situations, for example the initial login page is non-angular, one may want to start without the implicit waiting enabled.
+
+With the implicit wait functionality it is expected that most of the situations where waiting is needed will be handled "automatically" by this "hidden" implicit wait. Thus if one examined your test case they would not see many, if any, `Wait For Angular` keywords but instead would see actions keywords with no "waiting" keywords in between actions. There are though times when one needs to explicitly call out to wait for angular. For example when using a SeleniumLibrary keyword that does not use a locator strategy, like `Alert Should Be Present` and `` or if you use webelement. 
+
+
+Usage of the Angular Specific Locator Stratergies
+-------------------------------------------------
 The new locator strategies include
 
 .. code::
