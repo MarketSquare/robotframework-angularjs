@@ -24,6 +24,12 @@ js_wait_for_angular = """
     var waiting = true;
     var callback = function () {waiting = false;}
     var el = document.querySelector(arguments[0]);
+    if (!el) {
+      throw new Error('Unable to find root selector using "' +
+                      arguments[0] +
+                      '". Please refer to the AngularJS library documentation' +
+                      ' for more information on how to resolve this error.')
+    }
     if (window.angular && !(window.angular.version &&
           window.angular.version.major > 1)) {
       /* ng1 */

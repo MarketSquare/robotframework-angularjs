@@ -30,6 +30,13 @@ Alternatively, to install from source:
     python setup.py install
 
     
+Keyword Documentation
+---------------------
+The keyword documentation can be found on the `Github project page <http://selenium2library.github.io/robotframework-angularjs/>`_.
+
+
+Importing the library
+---------------------
 In order to use the keywords you have to include AngularJSLibrary in the settings section of your test or test suite. Note will will need to include the SeleniumLibrary **before** you import the AngularJSLibrary.
 
 .. code::  robotframework
@@ -44,10 +51,9 @@ In order to use the keywords you have to include AngularJSLibrary in the setting
     Wait for Angular
     ...
 
+There are currently two library options: root_selector, ignore_implicit_angular_wait. root_selector allows the user to set the Angular root element (AngularJS) or root component (Angular). The default value is "['ng-app']" and is a CSS selector; more specifically an attribute selector looking for an element with the attribute :code:`ng-app`. Starting in AngularJSLibrary version 0.0.10 if the root selector query fails an error is thrown noting the library is "[u]nable to find root selector ...". To resolve this issue one must discover the root element or component within the Angular appliction under test.
 
-Keyword Documentation
----------------------
-The keyword documentation can be found on the `Github project page <http://selenium2library.github.io/robotframework-angularjs/>`_.
+ignore_implicit_angular_wait is a flag which when set to True the AngularJS Library will not wait for Angular $timeouts nor $http calls to complete when finding elements by locator. As noted in the Protractor documentation "this should be used only when necessary, such as when a page continuously polls an API using $timeout." The default value is False.
 
 
 Usage of the Waiting functionality

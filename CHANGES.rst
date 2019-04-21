@@ -1,5 +1,15 @@
 Changelog
 =========
+0.0.10 (unreleased)
+---------
+Changes:
+
+- Updated library documentation.
+  [aaltat][emanlove]
+
+- Added error and informative message when unable to find root element or root component.
+  [anthonyfromtheuk][HelioGuilherme66][emanlove]
+
 0.0.9 (2018-09-08)
 ------------------
 Fixes:
