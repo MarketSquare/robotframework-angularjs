@@ -66,6 +66,7 @@ Here are the current (as of Aug. 3, 2018, selenium==3.14.0, robotframework-selen
     
     cd rf-sl
     python atest/run.py FF --suite angular --pythonpath ../rf-ng
+    python atest/run.py FF --suite angular_wait --pythonpath ../rf-ng
 
 or if you are using Windows
 
@@ -89,7 +90,16 @@ or if you are using Windows
     
     xcopy ptor\testapp rf-sl\atest\resources\testapp\ /E /Y /F
     copy /Y rf-ng\AngularJSLibrary\async.html rf-sl\atest\resources\testapp\ng1\async\.
-    copy /Y rf-ng\AngularJSLibrary\async.html rf-sl\atest\resources\testapp\ng1\async\.
+    copy /Y rf-ng\AngularJSLibrary\async.js rf-sl\atest\resources\testapp\ng1\async\.
     copy rf-ng\AngularJSLibrary\angular.robot rf-sl\atest\acceptance\locators\.
     copy rf-ng\AngularJSLibrary\angular_wait.robot rf-sl\atest\acceptance\keywords\.
 
+and then to run the tests
+
+.. code::  bat
+
+    cd rf-sl
+    python atest\run.py FF --nounit --suite angular --pythonpath ..\rf-ng
+    python atest\run.py FF --nounit --suite angular_wait --pythonpath ..\rf-ng
+
+noting in the commands above the addition of :code:`--nounit` argument to forgo running the unit tests.
