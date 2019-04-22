@@ -38,6 +38,14 @@ been made, one can use
 
 to tag a specified commit.
 
+Steps to update keyword documentation
+-------------------------------------
+
+.. code::  bash
+    
+    git checkout v0.0.5
+    python -m robot.libdoc AngularJSLibrary docs/test.html
+
 Current Steps to Setup Development Environment and Run Tests
 ------------------------------------------------------------
 Here are the current (as of Aug. 3, 2018, selenium==3.14.0, robotframework-seleniumlibrary==3.2.0.dev1, protractor==5.4.0) instructions for setting up the development environment and running the tests

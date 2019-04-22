@@ -159,21 +159,25 @@ class AngularJSLibrary:
     ):
         """AngularJSLibrary can be imported with optional arguments.
 
-        `root_selector` is the locator of the root angular object. If none is given it defaults to `[ng-app]`.
-        For more information please refer to the following documentation:
-           $rootElement - AngularJS API documentation - https://docs.angularjs.org/api/ng/service/$rootElement
-           ngApp - AngularJS API documentation - https://docs.angularjs.org/api/ng/directive/ngApp
+        ``root_selector`` is the locator of the root angular object. If none is given it defaults to ``[ng-app]``.
 
-        Not Yet Implemented - `implicit_angular_wait` is the implicit timeout that AngularJS library
+        For more information please refer to the following documentation:
+
+           $rootElement - [https://docs.angularjs.org/api/ng/service/$rootElement|AngularJS API documentation]
+
+           ngApp - [https://docs.angularjs.org/api/ng/directive/ngApp|AngularJS API documentation]
+
+        Not Yet Implemented - ``implicit_angular_wait`` is the implicit timeout that AngularJS library
                              waits for angular to finish rendering and waits for any outstanding $http calls.
 
-        `ignore_implicit_angular_wait` is a flag which when set to True the AngularJS Library will not wait
+        ``ignore_implicit_angular_wait`` is a flag which when set to True the AngularJS Library will not wait
         for Angular $timeouts nor $http calls to complete when finding elements by locator. As noted in the
         Protractor documentation "this should be used only when necessary, such as when a page continuously
         polls an API using $timeout." The default value is False.
 
         Examples:
-        | Library `|` AngularJSLibrary `|` ignore_implicit_angular_wait=${true}   | # Will not wait for angular syncronization
+        | Library | AngularJSLibrary | root_selector=[ng-version] | # Use [ng-version] as root element selector instead of the default [ng-app] |
+        | Library | AngularJSLibrary | ignore_implicit_angular_wait=${true}   | # Will not wait for angular syncronization |
 
         """
 
@@ -200,7 +204,14 @@ class AngularJSLibrary:
     # Wait For Angular
 
     def wait_for_angular(self, timeout=None, error=None):
+        """
+        An explicit wait allowing Angular queue to empty.
 
+        With the implicit wait functionality it is expected that most of the
+        situations where waiting is needed will be handled "automatically" by
+        the "hidden" implicit wait. Thus it is expected that this keyword will
+        be rarely used.
+        """
         # Determine timeout and error
         timeout = timeout or self._s2l.get_selenium_timeout()
         timeout = timestr_to_secs(timeout)
@@ -220,6 +231,13 @@ class AngularJSLibrary:
             #raise TimeoutException(error)
 
     def set_ignore_implicit_angular_wait(self, ignore):
+        """
+        Turns off the implicit wait by setting ``ignore`` to true. The
+        implicit wait can be re-enabled by setting ``ignore`` to false.
+
+        This is helpful when navigating between a Angular site and a
+        non-angular website within the same script.
+        """
         if not is_boolean(ignore):
             raise TypeError("Ignore must be boolean, got %s."
                             % type_name(ignore))
