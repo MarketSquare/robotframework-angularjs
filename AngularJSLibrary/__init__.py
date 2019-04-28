@@ -113,9 +113,8 @@ class ngElementFinder(ElementFinder):
 
         if not self.ignore_implicit_angular_wait:
             try:
-                sldriver = get_driver_obj(self._s2l)
-                WebDriverWait(sldriver, timeout, 0.2)\
-                    .until_not(lambda x: sldriver.execute_script(js_wait_for_angular, self.root_selector))
+                WebDriverWait(self._sldriver, timeout, 0.2)\
+                    .until_not(lambda x: self._sldriver.execute_script(js_wait_for_angular, self.root_selector))
             except TimeoutException:
                 pass
         elements = ElementFinder.find(self, locator, tag, first_only, required,
@@ -130,8 +129,7 @@ class ngElementFinder(ElementFinder):
             return ElementFinder._find_by_default(self, criteria, tag, constraints, parent)
 
     def _find_by_binding(self, criteria, tag, constraints, parent):
-        sldriver = get_driver_obj(self._s2l)
-        return sldriver.execute_script("""
+        return self._sldriver.execute_script("""
             var binding = '%s';
             var bindings = document.getElementsByClassName('ng-binding');
             var matches = [];
@@ -157,6 +155,13 @@ class ngElementFinder(ElementFinder):
         except RobotNotRunningError:
             from SeleniumLibrary import SeleniumLibrary
             return SeleniumLibrary()
+
+    @property
+    def _sldriver(self):
+        try:
+            return self._s2l._current_browser()
+        except AttributeError:
+            return self._s2l.driver
 
 class AngularJSLibrary:
 
@@ -230,9 +235,8 @@ class AngularJSLibrary:
                          'the page after specified timeout.')
 
         try:
-            sldriver = get_driver_obj(self._s2l)
-            WebDriverWait(sldriver, timeout, 0.2)\
-                .until_not(lambda x: sldriver.execute_script(js_wait_for_angular, self.root_selector))
+            WebDriverWait(self._sldriver, timeout, 0.2)\
+                .until_not(lambda x: self._sldriver.execute_script(js_wait_for_angular, self.root_selector))
         except TimeoutException:
             pass
             #if self.trackOutstandingTimeouts:
@@ -259,8 +263,7 @@ class AngularJSLibrary:
     # Locators
 
     def _find_by_binding(self, browser, criteria, tag, constrains):
-        sldriver = get_driver_obj(self._s2l)
-        return sldriver.execute_script("""
+        return self._sldriver.execute_script("""
             var binding = '%s';
             var bindings = document.getElementsByClassName('ng-binding');
             var matches = [];
@@ -283,8 +286,7 @@ class AngularJSLibrary:
         prefixes = ['ng-', 'ng_', 'data-ng-', 'x-ng-']#, 'ng\\:']
         for prefix in prefixes:
             selector = '[%smodel="%s"]' % (prefix, criteria)
-            sldriver = get_driver_obj(self._s2l)
-            elements = sldriver.execute_script("""return document.querySelectorAll('%s');""" % selector);
+            elements = self._sldriver.execute_script("""return document.querySelectorAll('%s');""" % selector);
             if len(elements):
                 return ElementFinder(self._s2l)._filter_elements(elements, tag, constraints)
         raise ValueError("Element locator '" + criteria + "' did not match any elements.")
@@ -293,8 +295,7 @@ class AngularJSLibrary:
         repeater_row_col = self._parse_ng_repeat_locator(criteria)
 
         js_repeater_str = self._reconstruct_js_locator(repeater_row_col)
-        sldriver = get_driver_obj(self._s2l)
-        elements = sldriver.execute_script(
+        elements = self._sldriver.execute_script(
             js_repeater_min +
             """var ng_repeat = new byRepeaterInner(true);""" +
             """return ng_repeat%s.getElements();""" % (js_repeater_str),
@@ -309,8 +310,7 @@ class AngularJSLibrary:
     # Helper Methods
 
     def _exec_js(self, code):
-        sldriver = get_driver_obj(self._s2l)
-        return sldriver.execute_script(code)
+        return self._sldriver.execute_script(code)
 
     def _parse_ng_repeat_locator(self, criteria):
         def _startswith(str,sep):
@@ -396,3 +396,10 @@ class AngularJSLibrary:
         except RobotNotRunningError:
             from SeleniumLibrary import SeleniumLibrary
             return SeleniumLibrary()
+
+    @property
+    def _sldriver(self):
+        try:
+            return self._s2l._current_browser()
+        except AttributeError:
+            return self._s2l.driver
