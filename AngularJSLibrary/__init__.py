@@ -5,6 +5,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 from SeleniumLibrary.locators import ElementFinder
 
+from exceptions import AttributeError
 import time
 
 js_wait_for_angularjs = """
@@ -91,6 +92,14 @@ def stripcurly(binding):
 def is_boolean(item):
     return isinstance(item,bool)
 
+def get_driver_obj(lib):
+    try:
+        driver_obj = lib._current_browser()
+    except AttributeError:
+        driver_obj = lib.driver
+
+    return driver_obj
+
 class ngElementFinder(ElementFinder):
     def __init__(self, root_selector, ignore_implicit_angular_wait=False):
         super(ngElementFinder, self).__init__(self._s2l)
@@ -104,8 +113,9 @@ class ngElementFinder(ElementFinder):
 
         if not self.ignore_implicit_angular_wait:
             try:
-                WebDriverWait(self._s2l._current_browser(), timeout, 0.2)\
-                    .until_not(lambda x: self._s2l._current_browser().execute_script(js_wait_for_angular, self.root_selector))
+                sldriver = get_driver_obj(self._s2l)
+                WebDriverWait(sldriver, timeout, 0.2)\
+                    .until_not(lambda x: sldriver.execute_script(js_wait_for_angular, self.root_selector))
             except TimeoutException:
                 pass
         elements = ElementFinder.find(self, locator, tag, first_only, required,
@@ -120,7 +130,8 @@ class ngElementFinder(ElementFinder):
             return ElementFinder._find_by_default(self, criteria, tag, constraints, parent)
 
     def _find_by_binding(self, criteria, tag, constraints, parent):
-        return self._s2l._current_browser().execute_script("""
+        sldriver = get_driver_obj(self._s2l)
+        return sldriver.execute_script("""
             var binding = '%s';
             var bindings = document.getElementsByClassName('ng-binding');
             var matches = [];
@@ -219,8 +230,9 @@ class AngularJSLibrary:
                          'the page after specified timeout.')
 
         try:
-            WebDriverWait(self._s2l._current_browser(), timeout, 0.2)\
-                .until_not(lambda x: self._s2l._current_browser().execute_script(js_wait_for_angular, self.root_selector))
+            sldriver = get_driver_obj(self._s2l)
+            WebDriverWait(sldriver, timeout, 0.2)\
+                .until_not(lambda x: sldriver.execute_script(js_wait_for_angular, self.root_selector))
         except TimeoutException:
             pass
             #if self.trackOutstandingTimeouts:
@@ -247,7 +259,8 @@ class AngularJSLibrary:
     # Locators
 
     def _find_by_binding(self, browser, criteria, tag, constrains):
-        return self._s2l._current_browser().execute_script("""
+        sldriver = get_driver_obj(self._s2l)
+        return sldriver.execute_script("""
             var binding = '%s';
             var bindings = document.getElementsByClassName('ng-binding');
             var matches = [];
@@ -270,7 +283,8 @@ class AngularJSLibrary:
         prefixes = ['ng-', 'ng_', 'data-ng-', 'x-ng-']#, 'ng\\:']
         for prefix in prefixes:
             selector = '[%smodel="%s"]' % (prefix, criteria)
-            elements = self._s2l._current_browser().execute_script("""return document.querySelectorAll('%s');""" % selector);
+            sldriver = get_driver_obj(self._s2l)
+            elements = sldriver.execute_script("""return document.querySelectorAll('%s');""" % selector);
             if len(elements):
                 return ElementFinder(self._s2l)._filter_elements(elements, tag, constraints)
         raise ValueError("Element locator '" + criteria + "' did not match any elements.")
@@ -279,7 +293,8 @@ class AngularJSLibrary:
         repeater_row_col = self._parse_ng_repeat_locator(criteria)
 
         js_repeater_str = self._reconstruct_js_locator(repeater_row_col)
-        elements = self._s2l._current_browser().execute_script(
+        sldriver = get_driver_obj(self._s2l)
+        elements = sldriver.execute_script(
             js_repeater_min +
             """var ng_repeat = new byRepeaterInner(true);""" +
             """return ng_repeat%s.getElements();""" % (js_repeater_str),
@@ -294,7 +309,8 @@ class AngularJSLibrary:
     # Helper Methods
 
     def _exec_js(self, code):
-            return self._s2l._current_browser().execute_script(code)
+        sldriver = get_driver_obj(self._s2l)
+        return sldriver.execute_script(code)
 
     def _parse_ng_repeat_locator(self, criteria):
         def _startswith(str,sep):
