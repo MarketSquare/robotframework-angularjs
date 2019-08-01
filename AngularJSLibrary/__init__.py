@@ -192,7 +192,11 @@ class AngularJSLibrary:
         ``ignore_implicit_angular_wait`` is a flag which when set to True the AngularJS Library will not wait
         for Angular $timeouts nor $http calls to complete when finding elements by locator. As noted in the
         Protractor documentation "this should be used only when necessary, such as when a page continuously
-        polls an API using $timeout." The default value is False.
+        polls an API using $timeout." The default value is False. Note, up through the current version, there is a
+        discrepancy between the ``Set Ignore Implicit Angular Wait`` keyword argument and the equivalent import library argument. The ``Set Ignore Implicit Angular Wait`` keyword has a strict
+        requirement that the ``ignore`` argument must be a Python boolean where as the imported library argument
+        accepts and Robot Framework Boolean arguments as outlined in the BuiltIn Library documentation.
+        This discrepancy may be resolved in a future release.
 
         Examples:
         | Library | AngularJSLibrary | root_selector=[ng-version] | # Use [ng-version] as root element selector instead of the default [ng-app] |
@@ -251,8 +255,11 @@ class AngularJSLibrary:
 
     def set_ignore_implicit_angular_wait(self, ignore):
         """
-        Turns off the implicit wait by setting ``ignore`` to true. The
-        implicit wait can be re-enabled by setting ``ignore`` to false.
+        Turns off the implicit wait by setting ``ignore`` to ${True}. The
+        implicit wait can be re-enabled by setting ``ignore`` to ${False}.
+        Note the value for ``ignore`` must be a Python boolean, meaning
+        either ${True} or ${False} or equivalent, for this
+        keyword.
 
         This is helpful when navigating between a Angular site and a
         non-angular website within the same script.

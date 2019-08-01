@@ -13,6 +13,9 @@ Changes:
 - Modified for Python 3 compatibility
   [emanlove]
 
+- Documented discrepancy between the ``Set Ignore Implicit Angular Wait`` keyword argument and the equivalent import library argument.
+  [HelioGuilherme66][aaltat][emanlove]
+
 0.0.9 (2018-09-08)
 ------------------
 Fixes:
