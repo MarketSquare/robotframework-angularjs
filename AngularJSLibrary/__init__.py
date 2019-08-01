@@ -5,7 +5,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 from SeleniumLibrary.locators import ElementFinder
 
-from exceptions import AttributeError
+try:
+    from exceptions import AttributeError
+except ImportError:
+    pass
 import time
 
 js_wait_for_angularjs = """
