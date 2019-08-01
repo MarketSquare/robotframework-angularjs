@@ -17,7 +17,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='robotframework-angularjs',
-    version='0.0.10dev1',
+    version='0.0.10',
     description="""An AngularJS extension to Robotframework's Selenium2Library""",
     long_description=long_description,
     long_description_content_type='text/x-rst',

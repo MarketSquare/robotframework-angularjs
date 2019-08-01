@@ -1,10 +1,10 @@
 Changelog
 =========
-0.0.10 (unreleased)
+0.0.10 (2019-07-31)
 ---------
 Changes:
 
-- Updated library documentation.
+- Updated library and keyword documentation.
   [aaltat][emanlove]
 
 - Added error and informative message when unable to find root element or root component.
@@ -15,6 +15,12 @@ Changes:
 
 - Documented discrepancy between the ``Set Ignore Implicit Angular Wait`` keyword argument and the equivalent import library argument.
   [HelioGuilherme66][aaltat][emanlove]
+
+- Update for compatibility with SeleniumLibrary 4.0.
+  [aaltat][emanlove]
+
+- Fixed major issue with setup test environment under Windows documentation.
+  [emanlove]
 
 0.0.9 (2018-09-08)
 ------------------
