@@ -10,6 +10,9 @@ Changes:
 - Added error and informative message when unable to find root element or root component.
   [anthonyfromtheuk][HelioGuilherme66][emanlove]
 
+- Modified for Python 3 compatibility
+  [emanlove]
+
 0.0.9 (2018-09-08)
 ------------------
 Fixes:
