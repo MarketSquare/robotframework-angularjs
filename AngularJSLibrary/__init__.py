@@ -182,15 +182,15 @@ class AngularJSLibrary:
 
         For more information please refer to the following documentation:
 
-           $rootElement - [https://docs.angularjs.org/api/ng/service/$rootElement|AngularJS API documentation]
+           rootElement - [https://docs.angularjs.org/api/ng/service/$rootElement|AngularJS API documentation]
 
            ngApp - [https://docs.angularjs.org/api/ng/directive/ngApp|AngularJS API documentation]
 
         Not Yet Implemented - ``implicit_angular_wait`` is the implicit timeout that AngularJS library
-                             waits for angular to finish rendering and waits for any outstanding $http calls.
+                             waits for angular to finish rendering and waits for any outstanding http calls.
 
         ``ignore_implicit_angular_wait`` is a flag which when set to True the AngularJS Library will not wait
-        for Angular $timeouts nor $http calls to complete when finding elements by locator. As noted in the
+        for Angular timeouts nor http calls to complete when finding elements by locator. As noted in the
         Protractor documentation "this should be used only when necessary, such as when a page continuously
         polls an API using $timeout." The default value is False. Note, up through the current version, there is a
         discrepancy between the ``Set Ignore Implicit Angular Wait`` keyword argument and the equivalent import library argument. The ``Set Ignore Implicit Angular Wait`` keyword has a strict
