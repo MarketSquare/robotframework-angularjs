@@ -29,7 +29,7 @@ js_wait_for_angular = """
     var callback = function () {waiting = false;}
     var el = document.querySelector(arguments[0]);
     if (!el) {
-      throw new Error('Unable to find root selector using "' +
+      throw new Error('Unable to find root selector that is given by importing the library using "' +
                       arguments[0] +
                       '". Please refer to the AngularJS library documentation' +
                       ' for more information on how to resolve this error.')
