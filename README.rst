@@ -32,7 +32,7 @@ Alternatively, to install from source:
     
 Keyword Documentation
 ---------------------
-The keyword documentation can be found on the `Github project page <http://selenium2library.github.io/robotframework-angularjs/>`_.
+The keyword documentation can be found on the `Github project page <https://marketsquare.github.io/robotframework-angularjs/>`_.
 
 
 Importing the library
