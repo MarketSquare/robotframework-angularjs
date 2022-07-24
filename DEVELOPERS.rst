@@ -52,15 +52,15 @@ Here are the current (as of Aug. 3, 2018, selenium==3.14.0, robotframework-selen
 
 .. code::  bash
 
-    mkdir locator
-    cd locator/
+    mkdir ng-test
+    cd ng-test/
     git clone https://github.com/robotframework/SeleniumLibrary.git rf-sl
-    git clone https://github.com/Selenium2Library/robotframework-angularjs.git rf-ng
+    git clone https://github.com/MarketSquare/robotframework-angularjs.git rf-ng
     git clone https://github.com/angular/protractor.git ptor
     
-    virtualenv -p /usr/bin/python2.7 --no-site-packages cl-py27-env
-    source cl-py27-env/bin/activate
-    pip install robotframework robotstatuschecker mockito selenium
+    virtualenv -p /usr/bin/python3.9 cl-py39-env
+    source cl-py39-env/bin/activate
+    pip install robotframework robotstatuschecker mockito selenium requests pytest
     
     patch rf-sl/atest/resources/testserver/testserver.py rf-ng/AngularJSLibrary/testserver.py.patch 
     
