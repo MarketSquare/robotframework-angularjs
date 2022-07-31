@@ -48,7 +48,7 @@ Steps to update keyword documentation
 
 Current Steps to Setup Development Environment and Run Tests
 ------------------------------------------------------------
-Here are the current (as of Aug. 3, 2018, selenium==3.14.0, robotframework-seleniumlibrary==3.2.0.dev1, protractor==5.4.0) instructions for setting up the development environment and running the tests
+Here are the current (as of July 25, 2022, selenium==4.3.0, robotframework-seleniumlibrary==6.1.0.dev1, protractor==6.0.0) instructions for setting up the development environment and running the tests
 
 .. code::  bash
 

@@ -206,11 +206,13 @@
 AngularJSLibrary\ng-repeater.js:
 AngularJSLibrary\ng-repeater.min.js:
 AngularJSLibrary\__init__.py (certain javascript portions):
+Various code examples (as noted in the documentation):
 
    The MIT License
 
-   Copyright (c) 2010-2015 Google, Inc.
-
+   Copyright (c) 2010-2020 Google LLC. http://angularjs.org
+   Copyright (c) 2010-2022 Google LLC. http://angular.io/license
+   
    Permission is hereby granted, free of charge, to any person obtaining a copy
    of this software and associated documentation files (the "Software"), to deal
    in the Software without restriction, including without limitation the rights
