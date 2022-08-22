@@ -6,8 +6,8 @@ thus timing issue when testing Angular based websites. The library does this by
 providing first an implicit wait and, subsequently, an explicit keyword for
 waiting on angular.
 
-About the support for various Angular versions and overall status of this library
----------------------------------------------------------------------------------
+About this library
+------------------
 The AngularJSLibrary, despite the name including JS, supports testing against
 both Angular 2.0+ (known as simply Angular) and Angular 1.0 (also known as
 Angular JS).
@@ -188,23 +188,18 @@ off and using instead the library's explicit `Wait For Angular` keyword.
         Wait For Angular
         Element Text Should Be    css:phone-detail h1    Samsung Galaxy Tab™
 
-The expected and designed usage of this library is to use the implicit wait in
-almost all cases. The reasoning is that it makes for a much cleaner and clearer
-test case. Note currently the implicit wait is not invoked when using a web
-element as the locator.
-
-In addition to the option to turn off the implicit wait on libray import, you
-may turn it off using the :code:`Set Ignore Implicit Angular Wait` keyword with
-an argument of :code:`${True}`. 
-
 With the implicit wait functionality it is expected that most of the situations
 where waiting is needed will be handled "automatically" by this "hidden" implicit
 wait. Thus if one examined your test case they would not see many, if any,
 `Wait For Angular` keywords but instead would see actions keywords with no
-"waiting" keywords in between actions. There are though times when one needs to
+"waiting" keywords in between actions. There are times, though, when one needs to
 explicitly call out to wait for angular. For example when using a SeleniumLibrary
 keyword that does not use a locator strategy, like :code:`Alert Should Be Present`
-and :code:`Page should contain ...`, or if you use webelement.
+and :code:`Page should contain`, or if you use webelement.
+
+In addition to the option to turn off the implicit wait on library import, you
+may turn it off using the :code:`Set Ignore Implicit Angular Wait` keyword with
+an argument of :code:`${True}`. 
 
 
 Understanding and verifying the angular waits
