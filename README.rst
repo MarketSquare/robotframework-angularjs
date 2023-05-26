@@ -299,16 +299,16 @@ easier to see and read.] I have personally used this myself both in developing
 this library as well as demonstrating to various Angular developers how a
 design/implementation is blocking testability.
 
-Usage of the Angular Specific Locator Strategies
+Additional Angular Specific Locator Strategies
 -------------------------------------------------
-The new locator strategies include
+**Note: It is no longer recommended to use these angular specific locator
+strategies. Although functional, the SeleniumLibrary locator strategies are more
+than sufficient and in most cases easier to use then these strategies. For backward
+compatablity reasons these will be left in but it is strongly recommended not to
+use.**
 
-.. code::
-
-    binding=
-    model=
-    repeater=
-
+The library provides three new locator strategies, including ``binding``,
+``model``, and ``repeater``.
 
 For example, you can look for an Angular ng-binding using
 
