@@ -346,7 +346,7 @@ Finally there is the strategy of find by repeat. This takes the general form of 
 
 Getting Help
 ------------
-If you need help with AngularJSLibrary, SeleniumLibrary, or Robot Framework usage, please reach out within the Robot Framework community `Slack <>`_ [`Invite to join community slack <https://rf-invite.herokuapp.com/>`_].
+If you need help with AngularJSLibrary, SeleniumLibrary, or Robot Framework usage, please reach out within the Robot Framework community `Slack <https://slack.robotframework.org/>`_.
 
     
 Keyword Documentation
