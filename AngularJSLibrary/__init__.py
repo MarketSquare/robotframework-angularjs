@@ -182,9 +182,9 @@ class AngularJSLibrary:
 
         For more information please refer to the following documentation:
 
-           $rootElement - [https://docs.angularjs.org/api/ng/service/$rootElement|AngularJS API documentation]
+           $rootElement - [https://code.angularjs.org/snapshot-stable/docs/api/ng/service/$rootElement|AngularJS API documentation]
 
-           ngApp - [https://docs.angularjs.org/api/ng/directive/ngApp|AngularJS API documentation]
+           ngApp - [https://code.angularjs.org/snapshot-stable/docs/api/ng/directive/ngApp|AngularJS API documentation]
 
         Not Yet Implemented - ``implicit_angular_wait`` is the implicit timeout that AngularJS library
                              waits for angular to finish rendering and waits for any outstanding $http calls.
