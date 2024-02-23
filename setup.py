@@ -1,8 +1,8 @@
-"""An AngularJS extension to Robotframework's Selenium2Library
+"""An AngularJS/Angular extension to Robotframework's SeleniumLibrary
 
 See:
 http://robotframework.org/
-https://github.com/Selenium2Library/robotframework-angularjs
+https://github.com/MarketSquare/robotframework-angularjs
 """
 
 from setuptools import setup, find_packages
@@ -17,20 +17,21 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='robotframework-angularjs',
-    version='0.0.11dev1',
-    description="""An AngularJS extension to Robotframework's Selenium2Library""",
+    version='1.0.0',
+    description="""An AngularJS/Angular extension to Robotframework's SeleniumLibrary""",
     long_description=long_description,
     long_description_content_type='text/x-rst',
-    url='https://github.com/Selenium2Library/robotframework-angularjs',
+    url='https://github.com/MarketSquare/robotframework-angularjs',
     author='Zephraph, Ed Manlove',
-    author_email='zephraph@gmail.com, devPyPlTw@verizon.net',
+    author_email='emanlove@verizon.net',
     license='Apache License 2.0',
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 6 - Mature',
         'Framework :: Robot Framework',
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 3',
         'Topic :: Software Development :: Testing',
     ],
     keywords='robotframework testing testautomation angular selenium webdriver',
